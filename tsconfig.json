@@ -15,7 +15,10 @@
     "noImplicitAny": false,
     "baseUrl": "./",
     "paths": {
-      "createAPI": ["src/index.ts"]
+      "@wsvaio/api": ["src/index.ts"],
+      "@/*": [
+        "example/*"
+      ],
     }
   }
 }

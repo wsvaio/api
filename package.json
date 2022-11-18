@@ -1,16 +1,17 @@
 {
-  "name": "@wsvaio/request",
+  "name": "@wsvaio/api",
   "version": "0.0.1",
-  "description": "常用utils",
+  "description": "一个基于fetch的简易封装",
   "author": "wsvaio <wsvaio@qq.com>",
   "license": "MIT",
   "homepage": "https://github.com/wsvaio/utils",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/antfu/utils.git"
+    "url": "git+https://github.com/wsvaio/utils.git"
   },
   "keywords": [
-    "utils"
+    "fetch",
+    "api"
   ],
   "exports": {
     ".": {
@@ -34,7 +35,7 @@
     "dev": "vite ./example"
   },
   "dependencies": {
-    "@wsvaio/utils": "^0.0.1"
+    "@wsvaio/utils": "^0.0.6"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^9.0.2",
