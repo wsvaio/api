@@ -1,7 +1,7 @@
 import { merge } from "@wsvaio/utils";
 import { method } from "./method";
 import { init } from "./init";
-import { ctx, TCreateAPIParamType, TCreateAPIReturnType } from "./env";
+import { ctx, TCreateAPIParamType, TCreateAPIReturnType, TMiddleWare, ToRequired } from "./env";
 
 export const createAPI = <T extends object = {}>(context: TCreateAPIParamType<T>): TCreateAPIReturnType<T> => {
   const ctx = <ctx<T>>merge(<any>context || {}, init, { overwrite: false });
@@ -24,3 +24,4 @@ export const createAPI = <T extends object = {}>(context: TCreateAPIParamType<T>
     use: <K extends "befores" | "afters" | "errors" | "finals">(key: K) => (...args: ctx<T>[K]) => ctx[key].push(...args)
   }
 }
+export { ctx, TCreateAPIParamType, TCreateAPIReturnType, TMiddleWare, ToRequired };

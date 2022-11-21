@@ -1,7 +1,7 @@
-export declare type TMiddleWare<T> = (ctx: T, next: () => Promise<void>) => Promise<any>;
+declare type TMiddleWare<T> = (ctx: T, next: () => Promise<void>) => Promise<any>;
 
 // C：自定义配置，P：body、query、param属性的类型提示，R：响应内容的类型
-export declare type ctx<C extends object = {}, P extends object = {}, R = any> = {
+declare type ctx<C extends object = {}, P extends object = {}, R = any> = {
   // fetch配置
   cache?: RequestCache;
   credentials?: RequestCredentials;
@@ -46,14 +46,14 @@ export declare type ctx<C extends object = {}, P extends object = {}, R = any> =
 
 } & C;
 
-export declare type ToRequired<T, K extends keyof T> =
+declare type ToRequired<T, K extends keyof T> =
   { [P in Exclude<keyof T, K>]: T[P]; }
   &
   { [P in K]-?: T[P] }
 
 
-export declare type TCreateAPIParamType<T extends object = {}> = Partial<ctx> & T;
-export declare type TCreateAPIReturnType<T extends object = {}> = ctx<T> & {
+declare type TCreateAPIParamType<T extends object = {}> = Partial<ctx> & T;
+declare type TCreateAPIReturnType<T extends object = {}> = ctx<T> & {
   get: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<ctx<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<ctx<T, P, R>>) => Promise<R>;
   post: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<ctx<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<ctx<T, P, R>>) => Promise<R>;
   put: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<ctx<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<ctx<T, P, R>>) => Promise<R>;
@@ -66,3 +66,5 @@ export declare type TCreateAPIReturnType<T extends object = {}> = ctx<T> & {
   request: <P_1 extends object = {}, R_1 extends object = {}>(conf2?: Partial<ctx<T, P_1, R_1>>) => Promise<R_1>;
   use: <K extends "befores" | "afters" | "errors" | "finals">(key: K) => (...args: ctx<T, {}, any>[K]) => number;
 };
+
+export { ctx, TCreateAPIParamType, TCreateAPIReturnType, TMiddleWare, ToRequired };
