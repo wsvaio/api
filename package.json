@@ -34,10 +34,10 @@
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
     "dev": "vite ./example",
     "prerelease": "npm run build && npm version prerelease && npm publish",
-    "release": "npm run build && npm version patch && npm publish"
+    "patch": "npm run build && npm version patch && npm publish"
   },
   "dependencies": {
-    "@wsvaio/utils": "^0.0.6"
+    "@wsvaio/utils": "^0.0.7"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^9.0.2",
