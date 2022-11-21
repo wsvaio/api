@@ -99,7 +99,7 @@ api.befores.push(
   async ctx => console.log("before"),
 )
 
-api.use("before")(
+api.use("befores")(
   async ctx => console.log("before"),
 )
 ```
@@ -124,7 +124,7 @@ api.request({ method: "post", befores: [
 ```typescript
 export const api = createAPI();
 
-api.use("before")(
+api.use("befores")(
   async ctx => {
     // 没有接收next参数会自动调用next
     console.log("before1");
