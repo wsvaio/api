@@ -1,4 +1,4 @@
-export declare type middleware<T> = (ctx: T, next: () => Promise<void>) => Promise<any>;
+export declare type TMiddleWare<T> = (ctx: T, next: () => Promise<void>) => Promise<any>;
 
 // C：自定义配置，P：body、query、param属性的类型提示，R：响应内容的类型
 export declare type ctx<C extends object = {}, P extends object = {}, R = any> = {
@@ -32,17 +32,17 @@ export declare type ctx<C extends object = {}, P extends object = {}, R = any> =
   response?: Response; // fetch的响应对象
 
 
-  befores: middleware<ctx<C, P>>[]; // 前置中间件
-  core: middleware<ctx<C, P>>; // 核心中间件，发送请求的中间件
-  afters: middleware<ToRequired<ctx<C, P>, "response">>[]; // 后置中间件
-  errors: middleware<ToRequired<ctx<C, P>, "error">>[]; // 错误中间件
-  finals: middleware<ctx<C, P>>[]; // 最终中间件
+  befores: TMiddleWare<ctx<C, P>>[]; // 前置中间件
+  core: TMiddleWare<ctx<C, P>>; // 核心中间件，发送请求的中间件
+  afters: TMiddleWare<ToRequired<ctx<C, P>, "response">>[]; // 后置中间件
+  errors: TMiddleWare<ToRequired<ctx<C, P>, "error">>[]; // 错误中间件
+  finals: TMiddleWare<ctx<C, P>>[]; // 最终中间件
 
   // 内置的一些中间件，封装一些通用的操作，比如拼接url参数，处理响应内容
-  _befores: middleware<ctx<C, P>>[]; // 内置前置中间件
-  _afters: middleware<ToRequired<ctx<C, P>, "response">>[]; // 内置后置中间件
-  _errors: middleware<ToRequired<ctx<C, P>, "error">>[]; // 内置错误中间件
-  _finals: middleware<ctx<C, P>>[]; // 内置最终中间件
+  _befores: TMiddleWare<ctx<C, P>>[]; // 内置前置中间件
+  _afters: TMiddleWare<ToRequired<ctx<C, P>, "response">>[]; // 内置后置中间件
+  _errors: TMiddleWare<ToRequired<ctx<C, P>, "error">>[]; // 内置错误中间件
+  _finals: TMiddleWare<ctx<C, P>>[]; // 内置最终中间件
 
 } & C;
 

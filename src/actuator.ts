@@ -1,7 +1,7 @@
-import { middleware } from "./env"
+import { TMiddleWare } from "./env"
 // 执行器
 
-export const actuator = async <T>(ctx: T, ...middleware: middleware<T>[]) => {
+export const actuator = async <T>(ctx: T, ...middleware: TMiddleWare<T>[]) => {
   let index = -1;
   await (async function next() {
     if (++index >= middleware.length) return;
