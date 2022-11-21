@@ -1,7 +1,6 @@
 import { trying, toString } from "@wsvaio/utils";
-import { ctx } from "./env";
-
-export const _befores: ctx["_befores"] = [
+import type { TContext } from "./types";
+export const _befores: TContext["_befores"] = [
   // 超时中断请求
   async ctx => {
     if (!ctx.timeout || ctx.signal) return;

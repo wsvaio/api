@@ -1,6 +1,6 @@
 import { dateFormat, isSimpleObject } from "@wsvaio/utils";
-import { ctx } from "./env";
-export const _finals: ctx["_finals"] = [
+import type { TContext } from "./types";
+export const _finals: TContext["_finals"] = [
   async ctx => {
     if (!ctx.log) return;
     const response = ctx.response || { ok: false, status: 100, statusText: "Continue" };

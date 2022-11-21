@@ -1,6 +1,6 @@
 import { trying, toString, merge } from "@wsvaio/utils";
-import { ctx } from "./env";
-export const _afters: ctx["_afters"] = [
+import type { TContext } from "./types";
+export const _afters: TContext["_afters"] = [
   async ctx => {
     if (!["[object String]"].includes(toString(ctx.body))) return;
     ctx.body = await trying(() => JSON.parse(<string>ctx.body)).catch(() => ctx.body);

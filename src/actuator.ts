@@ -1,6 +1,5 @@
-import { TMiddleWare } from "./env"
+import type { TMiddleWare } from "./types";
 // 执行器
-
 export const actuator = async <T>(ctx: T, ...middleware: TMiddleWare<T>[]) => {
   let index = -1;
   await (async function next() {
