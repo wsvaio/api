@@ -9,10 +9,10 @@ import { createAPI } from "@wsvaio/api";
 export const { get, use } = createAPI({
   baseURL: "/api",
 });
-use("before")(async ctx => {
+use("befores")(async ctx => {
   ctx.headers["auth"] = "...";
 });
-use("after")(async ctx => {
+use("afters")(async ctx => {
   console.log(ctx.data); // { code: 0, msg: 'success', data: 'xxxx' }
   ctx.data = ctx.data.data;
 });
