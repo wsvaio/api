@@ -32,7 +32,9 @@
   },
   "scripts": {
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
-    "dev": "vite ./example"
+    "dev": "vite ./example",
+    "prepatch": "npm run build && npm version prepatch && npm publish",
+    "patch": "npm run build && npm version patch && npm publish"
   },
   "dependencies": {
     "@wsvaio/utils": "^0.0.6"
