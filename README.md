@@ -19,7 +19,7 @@ use("afters")(async ctx => {
 
 export const getTest = get("/user");
 
-const data = getTest({ query: { id: 1 } }); // get: /api/user?id=1
+const data = await getTest({ query: { id: 1 } }); // get: /api/user?id=1
 console.log(data); // xxxx
 ```
 
@@ -164,7 +164,7 @@ api.request({ url: "/test", query: { id: 1 } });
 type P = { id: number };
 type R = { message: string };
 const postTest = api.post<P, R>("/test/:id?");
-const data = postTest({
+const data = await postTest({
   body: { id: 1 }, // 设置请求体
   param: { id: 1 }, // param会替换对应的/:key
   query: { id: 1 }, // query会拼接到url后
