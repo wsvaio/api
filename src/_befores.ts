@@ -1,4 +1,5 @@
 import { trying, toString } from "@wsvaio/utils";
+import { ctx } from "./env";
 
 export const _befores: ctx["_befores"] = [
   // 超时中断请求

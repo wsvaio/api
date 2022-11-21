@@ -1,4 +1,5 @@
 import { dateFormat, isSimpleObject } from "@wsvaio/utils";
+import { ctx } from "./env";
 export const _finals: ctx["_finals"] = [
   async ctx => {
     if (!ctx.log) return;

@@ -1,5 +1,6 @@
 import { mergeConfig } from "./mergeConfig";
 import { actuator } from "./actuator";
+import { ctx } from "./env";
 
 export const method = <T extends object = {}>(context: ctx<T>) =>
   (method?: ctx["method"]) =>

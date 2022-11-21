@@ -1,9 +1,10 @@
 import { merge } from "@wsvaio/utils";
 import { method } from "./method";
 import { init } from "./init";
+import { ctx, TCreateAPIParamType, TCreateAPIReturnType } from "./env";
 
-export const createAPI = <T extends object = {}>(context = <Partial<ctx> & T>{}) => {
-  const ctx = <ctx<T>>merge(<any>context, init, { overwrite: false });
+export const createAPI = <T extends object = {}>(context: TCreateAPIParamType<T>): TCreateAPIReturnType<T> => {
+  const ctx = <ctx<T>>merge(<any>context || {}, init, { overwrite: false });
 
 
   return {

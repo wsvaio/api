@@ -1,4 +1,5 @@
 import { trying, toString, merge } from "@wsvaio/utils";
+import { ctx } from "./env";
 export const _afters: ctx["_afters"] = [
   async ctx => {
     if (!["[object String]"].includes(toString(ctx.body))) return;

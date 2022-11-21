@@ -1,3 +1,5 @@
+import { ctx } from "./env";
+
 export const _errors: ctx["_errors"] = [
   async (ctx, next) => {
     // AbortError AbortController触发 请求超时

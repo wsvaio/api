@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { postTest, getTest, request, get } from "@/api";
+import {  request, get } from "@/api";
 </script>
 
 <template>
