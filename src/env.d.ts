@@ -1,7 +1,7 @@
-export type middleware<T> = (ctx: T, next: () => Promise<void>) => Promise<any>;
+export declare type middleware<T> = (ctx: T, next: () => Promise<void>) => Promise<any>;
 
 // C：自定义配置，P：body、query、param属性的类型提示，R：响应内容的类型
-export type ctx<C extends object = {}, P extends object = {}, R = any> = {
+export declare type ctx<C extends object = {}, P extends object = {}, R = any> = {
   // fetch配置
   cache?: RequestCache;
   credentials?: RequestCredentials;
@@ -46,14 +46,14 @@ export type ctx<C extends object = {}, P extends object = {}, R = any> = {
 
 } & C;
 
-export type ToRequired<T, K extends keyof T> =
+export declare type ToRequired<T, K extends keyof T> =
   { [P in Exclude<keyof T, K>]: T[P]; }
   &
   { [P in K]-?: T[P] }
 
 
-export type TCreateAPIParamType<T extends object = {}> = Partial<ctx> & T;
-export type TCreateAPIReturnType<T extends object = {}> = ctx<T> & {
+export declare type TCreateAPIParamType<T extends object = {}> = Partial<ctx> & T;
+export declare type TCreateAPIReturnType<T extends object = {}> = ctx<T> & {
   get: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<ctx<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<ctx<T, P, R>>) => Promise<R>;
   post: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<ctx<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<ctx<T, P, R>>) => Promise<R>;
   put: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<ctx<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<ctx<T, P, R>>) => Promise<R>;
