@@ -52,17 +52,19 @@ export type ToRequired<T, K extends keyof T> =
   { [P in K]-?: T[P] }
 
 
+export type TMethod<T extends object = {}> = <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
+
 export type TCreateAPIParamType<T extends object = {}> = Partial<TContext> & T;
 export type TCreateAPIReturnType<T extends object = {}> = TContext<T> & {
-  get: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
-  post: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
-  put: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
-  patch: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
-  del: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
-  head: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
-  connect: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
-  trace: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
-  options: <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
+  get: TMethod<T>;
+  post: TMethod<T>;
+  put: TMethod<T>;
+  patch: TMethod<T>;
+  del: TMethod<T>;
+  head: TMethod<T>;
+  connect: TMethod<T>;
+  trace: TMethod<T>;
+  options: TMethod<T>;
   request: <P_1 extends object = {}, R_1 extends object = {}>(conf2?: Partial<TContext<T, P_1, R_1>>) => Promise<R_1>;
   use: <K extends "befores" | "afters" | "errors" | "finals">(key: K) => (...args: TContext<T, {}, any>[K]) => number;
 };
