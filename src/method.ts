@@ -4,7 +4,7 @@ import type { TContext } from "./types";
 import { merge } from "@wsvaio/utils";
 export const method = <T extends object = {}>(context: TContext<T>) =>
   (method?: TContext["method"]) =>
-    <params extends object = {}, result extends object = {}>(conf1 = <Partial<TContext<T, params, result>> | string>{}) =>
+    <params extends object = {}, result extends object = Record<any, any>>(conf1 = <Partial<TContext<T, params, result>> | string>{}) =>
       async <P extends object = params, R extends object = result>(conf2 = <Partial<TContext<T, P, R>>>{}) => {
         const ctx = <Record<any, any>>merge({}, context, { deep: Infinity });
         ctx.method = method ?? "get";

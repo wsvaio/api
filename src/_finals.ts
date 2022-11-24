@@ -1,11 +1,11 @@
-import { dateFormat, isSimpleObject } from "@wsvaio/utils";
+import { dateFormat, toString } from "@wsvaio/utils";
 import type { TContext } from "./types";
 export const _finals: TContext["_finals"] = [
   async ctx => {
     if (!ctx.log) return;
     const response = ctx.response || { ok: false, status: 100, statusText: "Continue" };
-    const data = isSimpleObject(ctx.data) ? ctx.data : { data: ctx.data };
-    const body = isSimpleObject(ctx.body) ? ctx.body : { body: ctx.body };
+    const data = toString(ctx.data) == "[object Object]" ? ctx.data : { data: ctx.data };
+    const body = toString(ctx.body) == "[object Object]" ? ctx.body : { body: ctx.body };
     Object.setPrototypeOf(data, new function result() { });
     Object.setPrototypeOf(body, new function params() { });
     Object.setPrototypeOf(ctx, new function context() { });

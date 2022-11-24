@@ -52,7 +52,7 @@ export type ToRequired<T, K extends keyof T> =
   { [P in K]-?: T[P] }
 
 
-export type TMethod<T extends object = {}> = <params extends object = {}, result extends object = {}>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
+export type TMethod<T extends object = {}> = <params extends object = {}, result extends object = Record<any, any>>(conf1?: string | Partial<TContext<T, params, result>>) => <P extends object = params, R extends object = result>(conf2?: Partial<TContext<T, P, R>>) => Promise<R>;
 
 export type TCreateAPIParamType<T extends object = {}> = Partial<TContext> & T;
 export type TCreateAPIReturnType<T extends object = {}> = TContext<T> & {
