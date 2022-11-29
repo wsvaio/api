@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import {  request, get } from "@/api";
-const t = get("/test");
+import { request, get, post } from "@/api";
+const t = post("/test");
 const handleClick = () => {
-  t().then(data => {
+  t({ body: { a: 1 } }).then(data => {
     // console.log(data);
   });
 }

@@ -28,5 +28,5 @@ export const init = {
 
   data: {},
   message: "Continue",
-  status: 100
+  status: 100,
 }

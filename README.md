@@ -52,8 +52,8 @@ type ctx<C extends object = {}, P extends object = {}, R=any> = {
   url: string; // 请求地址；default="/"
   baseURL: string; // 请求根地址；default=""
   body: Partial<P> & Record<any, any> | BodyInit | null; // 请求体；default=null
-  query: Partial<P> & Record<any, any>; // 请求的query参数，会自动拼接到url之后
-  param: Partial<P> & Record<any, any>; // 请求的param参数，会自动替换url对应的/:key
+  query: Partial<P> & Record<any, any>; // 请求的query参数，会自动拼接到url之后；default={}
+  param: Partial<P> & Record<any, any>; // 请求的param参数，会自动替换url对应的/:key；default={}
 
   error?: Error; // 存储发生错误后的错误对象
 
