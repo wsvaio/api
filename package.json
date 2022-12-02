@@ -37,7 +37,7 @@
     "patch": "npm run build && npm version patch && npm publish"
   },
   "dependencies": {
-    "@wsvaio/utils": "latest"
+    "@wsvaio/utils": "^0.0.11"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^9.0.2",

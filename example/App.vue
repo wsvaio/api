@@ -2,7 +2,7 @@
 import { request, get, post } from "@/api";
 const t = post("/test");
 const handleClick = () => {
-  t({ body: { a: 1 } }).then(data => {
+  t({ b: { a: 1 }, q: {f: 231}, p: {a: 123} }).then(data => {
     // console.log(data);
   });
 }

@@ -1,7 +1,8 @@
 import { dateFormat, merge, toString } from "@wsvaio/utils";
 import type { TContext } from "./types";
 export const _finals: TContext["_finals"] = [
-  async ctx => {
+  async (ctx, next) => {
+    await next();
     if (!ctx.log) return;
     const response = ctx.response || { ok: false, status: 100, statusText: "Continue" };
     const Params = Object.setPrototypeOf({}, new function params() { });

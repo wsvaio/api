@@ -19,8 +19,7 @@ export const createAPI = <T extends object = {}>(context?: TCreateAPIParamType<T
     options: method<T>(ctx)("options"),
     request: method<T>(ctx)()(),
 
-    // @ts-ignore
-    use: <K extends "befores" | "afters" | "errors" | "finals">(key: K) => (...args: TContext<T>[K]) => ctx[key].push(...args)
+    use: <K extends "befores" | "afters" | "errors" | "finals">(key: K) => (...args: TContext<T>[K]) => ctx[key].push(...args as any[])
   }
 }
 

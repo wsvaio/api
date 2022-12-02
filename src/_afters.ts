@@ -3,7 +3,7 @@ import type { TContext } from "./types";
 export const _afters: TContext["_afters"] = [
   async ctx => {
     if (!["[object String]"].includes(toString(ctx.body))) return;
-    ctx.body = await trying(() => JSON.parse(<string>ctx.body)).catch(() => ctx.body);
+    ctx.body = await trying(() => JSON.parse(ctx.body as string)).catch(() => ctx.body);
   },
   // 格式化结果
   async ctx => {

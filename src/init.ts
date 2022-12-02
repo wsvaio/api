@@ -10,12 +10,18 @@ export const init = {
   timeout: 0,
   url: "/",
   baseURL: "",
+
   body: null,
-  query: {},
-  param: {},
+  query: null,
+  param: null,
+
+  b: {},
+  q: {},
+  p: {},
+
+  core: async ctx => ctx.response = await fetch(`${ctx.baseURL}${ctx.url}`, ctx),
 
   befores: [],
-  core: async ctx => ctx.response = await fetch(`${ctx.baseURL}${ctx.url}`, <RequestInit>ctx),
   afters: [],
   errors: [],
   finals: [],
@@ -24,7 +30,6 @@ export const init = {
   _afters,
   _errors,
   _finals,
-
 
   data: {},
   message: "Continue",

@@ -1,7 +1,7 @@
-import { remove, merge } from "@wsvaio/utils";
+import { merge, pick } from "@wsvaio/utils";
 export const mergeConfig = (conf1: Record<any, any>, conf2: Record<any, any>) => {
   const { befores = [], afters = [], errors = [], finals = [], _befores = [], _afters = [], _errors = [], _finals = [] }
-    = remove(conf2, "befores", "afters", "errors", "finals", "_befores", "_afters", "_errors", "_finals");
+    = pick(conf2, ["befores", "afters", "errors", "finals", "_befores", "_afters", "_errors", "_finals"], true);
   conf1.befores?.push(...befores);
   conf1.afters?.push(...afters);
   conf1.errors?.push(...errors);
