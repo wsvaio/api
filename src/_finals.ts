@@ -1,4 +1,4 @@
-import { dateFormat, merge, toString } from "@wsvaio/utils";
+import { dateFormat, merge, is } from "@wsvaio/utils";
 import type { TContext } from "./types";
 export const _finals: TContext["_finals"] = [
   async (ctx, next) => {
@@ -8,8 +8,8 @@ export const _finals: TContext["_finals"] = [
     const Params = Object.setPrototypeOf({}, new function params() { });
     const Result = Object.setPrototypeOf({}, new function result() { });
     const Context = Object.setPrototypeOf({}, new function context() { });
-    merge(Params, toString(ctx.body) == "[object Object]" ? ctx.body : { body: ctx.body });
-    merge(Result, toString(ctx.data) == "[object Object]" ? ctx.data : { data: ctx.data });
+    merge(Params, is("Object")(ctx.body) ? ctx.body : { body: ctx.body });
+    merge(Result, is("Object")(ctx.data) ? ctx.data : { data: ctx.data });
     merge(Context, ctx);
     console.groupCollapsed(`%c ${dateFormat(Date.now())} %c ${ctx.method} %c ${ctx.url} %c ${response.status} ${response.statusText} `,
       "font-size: 16px; font-weight: 100; color: white; background: #909399; border-radius: 3px 0 0 3px;",

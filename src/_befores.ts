@@ -1,4 +1,4 @@
-import { trying, toString } from "@wsvaio/utils";
+import { trying, is } from "@wsvaio/utils";
 import type { TContext } from "./types";
 export const _befores: TContext["_befores"] = [
   // 超时中断请求
@@ -18,7 +18,7 @@ export const _befores: TContext["_befores"] = [
     for (const [k, v] of Object.entries(ctx.query)) {
       Array.isArray(v) ? v.forEach(item => url.searchParams.append(k, item)) : url.searchParams.append(k, v);
     }
-    const body = toString(ctx.body) == "[object Object]" ? ctx.body : {};
+    const body = is("Object")(ctx.body) ? ctx.body : {};
     const keys = url.pathname.split("/").filter(item => item.startsWith(":")).map(item => item.substring(1));
     for (const key of keys) {
       const val = ctx.param[key] ?? body[key] ?? "";
@@ -31,7 +31,8 @@ export const _befores: TContext["_befores"] = [
     // 移除 GET/HEAD 请求方法的请求体
     if (["get", "head"].includes(ctx.method.toLowerCase())) ctx.body = null;
     // 添加Content-Type（因为要转换为JSON，fetch默认对字符串设置为text/plain）
-    if (["[object Object]", "[object Array]"].includes(toString(ctx.body))) await trying(() => {
+
+    if (is("Object", "Array")(ctx.body)) await trying(() => {
       ctx.body = JSON.stringify(ctx.body);
       ctx.headers!["Content-Type"] = "application/json;charset=UTF-8";
     }).catch(() => { });
