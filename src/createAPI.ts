@@ -1,4 +1,4 @@
-import { BaseContext, ConfigContext } from "./types";
+import { ConfigContext, MiddlewareContext } from "./types";
 import { befores, afters, errors, finals } from "./middleware";
 import { createContext, mergeContext } from "./context";
 import { request } from "./request";
@@ -21,7 +21,7 @@ export const createAPI = <C extends object = {}>(config = {} as ConfigContext & 
     request: request<C>(context)()(),
     use:
       <K extends "befores" | "afters" | "errors" | "finals">(key: K) =>
-      (...args: BaseContext<C>[K]) =>
-        context[key].push(...args),
+        (...args: MiddlewareContext<C>[K]) =>
+          context[key].push(...args),
   };
 };

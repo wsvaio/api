@@ -27,3 +27,7 @@ use("errors")(async ctx => {
 use("finals")(async ctx => {
   console.log("finals");
 });
+
+
+const testt = get("/a/b/:c?/:d?");
+testt({ p: { "c": 123 }, b: {}, q: {} })

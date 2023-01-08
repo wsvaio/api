@@ -18,7 +18,7 @@ export const befores: Middleware<BeforeContext>[] = [
     for (const [k, v] of Object.entries(ctx.query)) {
       Array.isArray(v)
         ? v.forEach(item => url.searchParams.append(k, item))
-        : url.searchParams.append(k, v);
+        : url.searchParams.append(k, v as string);
     }
     const body = is("Object")(ctx.body) ? ctx.body : {};
     const keys = url.pathname
@@ -40,7 +40,7 @@ export const befores: Middleware<BeforeContext>[] = [
       await trying(() => {
         ctx.body = JSON.stringify(ctx.body);
         ctx.headers!["Content-Type"] = "application/json;charset=UTF-8";
-      }).catch(() => {});
+      }).catch(() => { });
     await next();
     // 恢复body
     if (is("String")(ctx.body))
@@ -66,9 +66,8 @@ export const afters: Middleware<AfterContext>[] = [
       status: ctx.response.status,
       statusText: ctx.response.statusText,
       ok: ctx.response.ok,
-      message: `请求${ctx.response.ok ? "成功" : "失败"}：${ctx.response.status} ${
-        ctx.response.statusText
-      }`,
+      message: `请求${ctx.response.ok ? "成功" : "失败"}：${ctx.response.status} ${ctx.response.statusText
+        }`,
     });
 
     // 抛出错误状态码
@@ -91,10 +90,10 @@ export const finals: Middleware<FinalContext>[] = [
   async (ctx, next) => {
     await next();
     if (!ctx.log) return;
-    const status = ctx.ok ? `${ctx.status} ${ctx.statusText}` : `${ctx.message}`;
-    const Params = Object.setPrototypeOf({}, new (function params() {})());
-    const Result = Object.setPrototypeOf({}, new (function result() {})());
-    const Context = Object.setPrototypeOf({}, new (function context() {})());
+    const status = ctx.response ? `${ctx.status} ${ctx.statusText}` : `${ctx.message}`;
+    const Params = Object.setPrototypeOf({}, new (function params() { })());
+    const Result = Object.setPrototypeOf({}, new (function result() { })());
+    const Context = Object.setPrototypeOf({}, new (function context() { })());
     merge(Params, is("Object")(ctx.body) ? ctx.body : { body: ctx.body });
     merge(Result, is("Object")(ctx.data) ? ctx.data : { data: ctx.data });
     merge(Context, ctx);
@@ -103,8 +102,7 @@ export const finals: Middleware<FinalContext>[] = [
       "font-size: 16px; font-weight: 100; color: white; background: #909399; border-radius: 3px 0 0 3px;",
       "font-size: 16px; font-weight: 100; color: white; background: #E6A23C;",
       "font-size: 16px; font-weight: 100; color: white; background: #409EFF;",
-      `font-size: 16px; font-weight: 100; color: white; background: ${
-        ctx.ok ? "#67C23A" : "#F56C6C"
+      `font-size: 16px; font-weight: 100; color: white; background: ${ctx.ok ? "#67C23A" : "#F56C6C"
       }; border-radius: 0 3px 3px 0;`
     );
     console.log(Params);

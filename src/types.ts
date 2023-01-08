@@ -9,22 +9,39 @@ export type ResponseType<R = any> = {
   response: Response;
 };
 
-export type RequestType<P = {}> = {
-  method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "connect" | "trace";
+export type RequestType<B = {}, Q = {}, P = {}> = {
+  method:
+  | "get"
+  | "post"
+  | "put"
+  | "patch"
+  | "delete"
+  | "options"
+  | "head"
+  | "connect"
+  | "trace";
   headers: HeadersInit;
   url: string;
   baseURL: string;
 
-  body: (Partial<P> & Record<any, any>) | BodyInit | null; // 请求体
-  query: (Partial<P> & Record<any, any>) | null; // 请求的query参数，会自动拼接到url之后
-  param: (Partial<P> & Record<any, any>) | null; // 请求的param参数，会自动替换url对应的/:key
+  body: B | BodyInit | null; // 请求体
+  query: Q | null; // 请求的query参数，会自动拼接到url之后
+  param: P | null; // 请求的param参数，会自动替换url对应的/:key
 
-  b: Partial<P> & Record<any, any>; // 与 body 相同，优先级低
-  q: Partial<P> & Record<any, any>; // 与 query 相同，优先级低
-  p: Partial<P> & Record<any, any>; // 与 param 相同，优先级低
+  b: B; // 与 body 相同，优先级低
+  q: Q; // 与 query 相同，优先级低
+  p: P; // 与 param 相同，优先级低
 };
 
-export type BaseContext<C = {}, P = {}, R = any> = {
+export type MiddlewareContext<C = {}, B = {}, Q = {}, P = {}, R = any> = {
+  befores: Middleware<BeforeContext<C, B, Q, P, R>>[]; // 前置中间件
+  core: Middleware<BeforeContext<C, B, Q, P, R>>; // 核心中间件，发送请求的中间件
+  afters: Middleware<AfterContext<C, B, Q, P, R>>[]; // 后置中间件
+  errors: Middleware<ErrorContext<C, B, Q, P, R>>[]; // 错误中间件
+  finals: Middleware<FinalContext<C, B, Q, P, R>>[]; // 最终中间件
+};
+
+export type BaseContext = {
   // fetch配置
   cache?: RequestCache;
   credentials?: RequestCredentials;
@@ -43,34 +60,70 @@ export type BaseContext<C = {}, P = {}, R = any> = {
   message: string; // 存储消息信息，比如发生错误后的error.message
 
   dataType?: "arrayBuffer" | "blob" | "formData" | "json" | "text";
-
-  befores: Middleware<BeforeContext<C, P, R>>[]; // 前置中间件
-  core: Middleware<BeforeContext<C, P, R>>; // 核心中间件，发送请求的中间件
-  afters: Middleware<AfterContext<C, P, R>>[]; // 后置中间件
-  errors: Middleware<ErrorContext<C, P, R>>[]; // 错误中间件
-  finals: Middleware<FinalContext<C, P, R>>[]; // 最终中间件
 };
 
-export type ConfigContext<C = {}, P = {}, R = any> = Partial<
-  BaseContext<C, P, R> & RequestType<P> & C
->;
+export type ConfigContext<C = {}, B = {}, Q = {}, P = {}, R = any> =
+  Partial<
+    BaseContext &
+    MiddlewareContext<C, B, Q, P, R> &
+    RequestType<B, Q, P> &
+    C
+  >;
 
-export type BeforeContext<C = {}, P = {}, R = any> = BaseContext<C, P, R> &
-  RequestType<P> &
-  Partial<ResponseType<R>> &
+export type BeforeContext<C = {}, B = {}, Q = {}, P = {}, R = any> =
+  BaseContext &
+  MiddlewareContext<C, B, Q, P, R> &
+  RequestType<B, Q, P> &
   C;
 
-export type AfterContext<C = {}, P = {}, R = any> = BaseContext<C, P, R> &
-  RequestType<P> &
+export type AfterContext<C = {}, B = {}, Q = {}, P = {}, R = any> =
+  BaseContext &
+  MiddlewareContext<C, B, Q, P, R> &
+  RequestType<B, Q, P> &
   ResponseType<R> &
   C;
 
-export type ErrorContext<C = {}, P = {}, R = any> = BaseContext<C, P, R> &
-  RequestType<P> &
+export type ErrorContext<C = {}, B = {}, Q = {}, P = {}, R = any> =
+  BaseContext &
+  MiddlewareContext<C, B, Q, P, R> &
+  RequestType<B, Q, P> &
   Partial<ResponseType<R>> &
   C & { error: Error };
 
-export type FinalContext<C = {}, P = {}, R = any> = BaseContext<C, P, R> &
-  RequestType<P> &
+export type FinalContext<C = {}, B = {}, Q = {}, P = {}, R = any> =
+  BaseContext &
+  MiddlewareContext<C, B, Q, P, R> &
+  RequestType<B, Q, P> &
   Partial<ResponseType<R>> &
   C & { error?: Error };
+
+/** 来自oak源码 */
+export interface ParamsDictionary {
+  [key: string]: string | number;
+}
+
+export type RemoveTail<
+  S extends string,
+  Tail extends string
+> = S extends `${infer P}${Tail}` ? P : S;
+
+export type GetRouteParams<S extends string> = RemoveTail<
+  RemoveTail<RemoveTail<S, `/${string}`>, `-${string}`>,
+  `.${string}`
+>;
+
+export type RouteParams<Route extends string> = string extends Route
+  ? ParamsDictionary
+  : Route extends `${string}(${string}`
+  ? ParamsDictionary
+  : Route extends `${string}:${infer Rest}`
+  ? (GetRouteParams<Rest> extends never
+    ? ParamsDictionary
+    : GetRouteParams<Rest> extends `${infer ParamName}?`
+    ? { [P in ParamName]?: string | number }
+    : { [P in GetRouteParams<Rest>]: string | number }) &
+  (Rest extends `${GetRouteParams<Rest>}${infer Next}`
+    ? RouteParams<Next>
+    : unknown)
+  : ParamsDictionary;
+/** 来自oak源码 */
