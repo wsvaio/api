@@ -1,25 +1,27 @@
-import { merge } from "@wsvaio/utils";
-import { method } from "./method";
-import { init } from "./init";
-import type { TContext, TCreateAPIParamType, TCreateAPIReturnType } from "./types";
-export const createAPI = <T extends object = {}>(context?: TCreateAPIParamType<T>): TCreateAPIReturnType<T> => {
-  const ctx = <TContext<T>>merge(<any>context || {}, init, { overwrite: false });
+import { BaseContext, ConfigContext } from "./types";
+import { befores, afters, errors, finals } from "./middleware";
+import { createContext, mergeContext } from "./context";
+import { request } from "./request";
 
+export const createAPI = <C extends object = {}>(config = {} as ConfigContext & C) => {
+  const context: Record<any, any> = createContext();
+  mergeContext(context, { befores, afters, errors, finals });
+  mergeContext(context, config);
 
   return {
-    ...ctx,
-    get: method<T>(ctx)("get"),
-    post: method<T>(ctx)("post"),
-    put: method<T>(ctx)("put"),
-    patch: method<T>(ctx)("patch"),
-    del: method<T>(ctx)("delete"),
-    head: method<T>(ctx)("head"),
-    connect: method<T>(ctx)("connect"),
-    trace: method<T>(ctx)("trace"),
-    options: method<T>(ctx)("options"),
-    request: method<T>(ctx)()(),
-
-    use: <K extends "befores" | "afters" | "errors" | "finals">(key: K) => (...args: TContext<T>[K]) => ctx[key].push(...args as any[])
-  }
-}
-
+    get: request<C>(context)("get"),
+    post: request<C>(context)("post"),
+    put: request<C>(context)("put"),
+    patch: request<C>(context)("patch"),
+    del: request<C>(context)("delete"),
+    head: request<C>(context)("head"),
+    connect: request<C>(context)("connect"),
+    trace: request<C>(context)("trace"),
+    options: request<C>(context)("options"),
+    request: request<C>(context)()(),
+    use:
+      <K extends "befores" | "afters" | "errors" | "finals">(key: K) =>
+      (...args: BaseContext<C>[K]) =>
+        context[key].push(...args),
+  };
+};

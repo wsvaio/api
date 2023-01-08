@@ -1,9 +1,7 @@
-# 一个fetch的简易包装
-参考了koa express的中间件运行机制，将fetch请求设为【核心中间件】    
-在其之前都为【前置中间件】，在其之后都为【后置中间件】  
-并且在运行时使用了catch finall，所以可以配置【错误中间件】【最终中间件】    
+# 以洋葱模型运行机制对 fetch 的包装
 
 ## 快速使用
+
 ```typescript
 import { createAPI } from "@wsvaio/api";
 export const { get, use } = createAPI({
@@ -23,14 +21,97 @@ const data = await getTest({ query: { id: 1 } }); // get: /api/user?id=1
 console.log(data); // xxxx
 ```
 
-## 配置预览
-主要就一个ctx对象，所有中间件都围绕该对象操作  
-使用createAPI创建时会创建一个ctx对象  
-每次调用请求方法都会创建一个新的ctx对象，并且会合并createAPI创建时的配置  
-只有createAPI创建的对象才有请求方法  
-``` typescript
-// C：自定义配置，P：body、query、param属性的类型提示，R：响应内容的类型
-export type TContext<C extends object = {}, P extends object = {}, R = any> = {
+## 中间件
+
+### 中间件有四种类型
+
+1. before: 前置中间件，请求发出前调用
+2. after: 后置中间件，请求发出后调用
+3. error: 错误中间件，发生错误时调用
+4. final: 最终中间件，最后才会调用
+
+### 配置中间件
+
+1. 创建时配置
+
+```typescript
+export const api = createAPI({
+  befores: [async ctx => console.log("before")],
+});
+api.use("befores")(async ctx => console.log("before"));
+```
+
+2. 调用时配置
+
+```typescript
+const api = createAPI({
+  method: "get",
+  befores: [async ctx => console.log("before")],
+});
+// 中间件的配置不会覆盖创建时的配置，与创建时配置合并，其他配置则会覆盖，如method
+api.request({ method: "post", befores: [async ctx => console.log("before")] });
+```
+
+### 运行机制
+
+运行机制使用了洋葱模型
+
+```typescript
+export const api = createAPI();
+
+api.use("befores")(
+  async ctx => {
+    // 没有接收next参数会自动调用next
+    console.log("before1");
+  },
+  async (ctx, next) => {
+    // 接受了next参数需要手动调用next才能执行下一个中间件
+    console.log("before2 in");
+    await next();
+    // 后续中间件执行完毕后执行
+    console.log("before2 out");
+  },
+  async (ctx, next) => {
+    // 接受了next参数，没有调用next，之后的中间件都不会调用
+    console.log("before3");
+  }
+);
+```
+
+## 发送请求
+
+```typescript
+const api = createAPI();
+
+// api.request方法会直接调用，其它请求方法需要调用两次，方便配置
+// 先配置再调用
+const getTest = api.get("/test");
+getTest({ query: { id: 1 } });
+// 直接发送请求
+api.request({ url: "/test", query: { id: 1 } });
+
+// 泛型支持，P：body、query、param属性的类型提示，R：响应内容的类型
+type P = { id: number };
+type R = { message: string };
+const postTest = api.post<P, R>("/test/:id?");
+const data = await postTest({
+  body: { id: 1 }, // 设置请求体
+  param: { id: 1 }, // param会替换对应的/:key
+  query: { id: 1 }, // query会拼接到url后
+
+  // b、p、q等同body、param、query，优先级比它们低，b只能接受对象类型，body可以接受FormData、ArrayBuffer、Blob等复杂类型；
+  b: {},
+  p: {},
+  q: {},
+});
+```
+
+## Context
+
+完整的 Context 包括以下属性
+
+```typescript
+type Context = {
   // fetch配置
   cache?: RequestCache;
   credentials?: RequestCredentials;
@@ -51,125 +132,29 @@ export type TContext<C extends object = {}, P extends object = {}, R = any> = {
   url: string; // 请求地址
   baseURL: string; // 请求根地址
 
-  body: Partial<P> & Record<any, any> | BodyInit | null; // 请求体
-  query: Partial<P> & Record<any, any> | null; // 请求的query参数，会自动拼接到url之后
-  param: Partial<P> & Record<any, any> | null; // 请求的param参数，会自动替换url对应的/:key
+  body: Record<any, any> | BodyInit | null; // 请求体
+  query: Record<any, any> | null; // 请求的query参数，会自动拼接到url之后
+  param: Record<any, any> | null; // 请求的param参数，会自动替换url对应的/:key
 
-  b: Partial<P> & Record<any, any>; // 与 body 相同，优先级低
-  q: Partial<P> & Record<any, any>; // 与 query 相同，优先级低
-  p: Partial<P> & Record<any, any>; // 与 param 相同，优先级低
+  b: Record<any, any>; // 与 body 相同，优先级低
+  q: Record<any, any>; // 与 query 相同，优先级低
+  p: Record<any, any>; // 与 param 相同，优先级低
 
-  error?: Error; // 存储发生错误后的错误对象
+  error: Error; // 存储发生错误后的错误对象
+
   data: R; // 响应内容
+  dataType?: "arrayBuffer" | "blob" | "formData" | "json" | "text"; // response 解析返回值的方式，默认先解析为text，再尝试解析成json
+  status: Response["status"];
+  statusText: Response["statusText"];
+  ok: Response["ok"];
+  response: Response; // 发送请求后的响应对象
+
   message: string; // 存储消息信息，比如发生错误后的error.message
-  status: number; // 状态码
-  response?: Response; // fetch的响应对象
 
-
-  befores: TMiddleWare<TContext<C, P>>[]; // 前置中间件
-  core: TMiddleWare<TContext<C, P>>; // 核心中间件，发送请求的中间件
-  afters: TMiddleWare<ToRequired<TContext<C, P>, "response">>[]; // 后置中间件
-  errors: TMiddleWare<ToRequired<TContext<C, P>, "error">>[]; // 错误中间件
-  finals: TMiddleWare<TContext<C, P>>[]; // 最终中间件
-
-  // 内置的一些中间件，封装一些通用的操作，比如拼接url参数，处理响应内容
-  _befores: TMiddleWare<TContext<C, P>>[]; // 内置前置中间件
-  _afters: TMiddleWare<ToRequired<TContext<C, P>, "response">>[]; // 内置后置中间件
-  _errors: TMiddleWare<ToRequired<TContext<C, P>, "error">>[]; // 内置错误中间件
-  _finals: TMiddleWare<TContext<C, P>>[]; // 内置最终中间件
-
-} & C;
+  befores: Middleware[]; // 前置中间件
+  core: Middleware; // 核心中间件，发送请求的中间件
+  afters: Middleware[]; // 后置中间件
+  errors: Middleware[]; // 错误中间件
+  finals: Middleware[]; // 最终中间件
+};
 ```
-
-## 中间件
-### 中间件有四种类型
-1. before: 前置中间件，请求发出前调用
-2. after: 后置中间件，请求发出后调用
-3. error: 错误中间件，发生错误时调用
-4. final: 最终中间件，最后才会调用
-### 配置中间件
-1. 创建时配置
-```typescript
-export const api = createAPI({
-  befores: [
-    async ctx => console.log("before"),
-  ]
-});
-
-api.befores.push(
-  async ctx => console.log("before"),
-)
-
-api.use("befores")(
-  async ctx => console.log("before"),
-)
-```
-2. 调用时配置
-```typescript
-const api = createAPI({
-  method: "get",
-  befores: [
-    async ctx => console.log("before"),
-  ]
-});
-// 中间件的配置不会覆盖创建时的配置，与创建时配置合并，其他配置则会覆盖，如method
-api.request({ method: "post", befores: [
-  async ctx => console.log("before"),
-] })
-
-```
-### 运行机制
-运行机制使用了洋葱模型  
-前置、核心、后置中间件都在同一个执行列  
-错误与最终中间件都是单独的执行列  
-```typescript
-export const api = createAPI();
-
-api.use("befores")(
-  async ctx => {
-    // 没有接收next参数会自动调用next
-    console.log("before1");
-  },
-  async (ctx, next) => {
-    // 接受了next参数需要手动调用next才能执行下一个中间件
-    console.log("before2 in");
-    await next();
-    // 下一个中间件执行完毕后执行
-    console.log("before2 out");
-  },
-  async (ctx, next) => {
-    // 没有调用next，之后的中间件都不会调用，将会直接到最终中间件
-    console.log("before3");
-  },
-  async ctx => {
-    console.log("before5");
-    return Promise.reject("抛出错误"); // 遇到错误会跳到错误中间件
-  },
-)
-
-```
-
-## 发送请求
-```typescript
-const api = createAPI();
-
-// api.request方法会直接调用，其它请求方法需要调用两次，方便配置
-// 先配置再调用
-const getTest = api.get("/test");
-getTest({ query: { id: 1 } });
-// 直接发送请求
-api.request({ url: "/test", query: { id: 1 } });
-
-// 泛型支持，P：body、query、param属性的类型提示，R：响应内容的类型
-// body、query、param暂不能单独配置，统一使用泛型P，配置较为宽松
-type P = { id: number };
-type R = { message: string };
-const postTest = api.post<P, R>("/test/:id?");
-const data = await postTest({
-  body: { id: 1 }, // 设置请求体
-  param: { id: 1 }, // param会替换对应的/:key
-  query: { id: 1 }, // query会拼接到url后
-});
-data.message;
-```
-
