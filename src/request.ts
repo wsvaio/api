@@ -1,12 +1,12 @@
 import { compose, merge } from "@wsvaio/utils";
 import { mergeContext } from "./context";
-import { ConfigContext, RouteParams } from "./types";
+import { ConfigContext } from "./types";
 
 export const request =
   <C>(context: Record<any, any>) =>
     (method?: ConfigContext["method"]) =>
-      <R extends object = {}, B extends object = {}, Q extends object = {}, P extends object = {}, U extends string = "">(conf1 = {} as (ConfigContext<C, B, Q, P & RouteParams<U>, R> & { url: U }) | U) =>
-        async <Result extends object = R>(conf2 = {} as ConfigContext<C, B, Q, P & RouteParams<U>, Result>): Promise<Result> => {
+      <P extends object = {}, R = any>(conf1 = {} as (ConfigContext<C, P, R> | string)) =>
+        async <Result = R>(conf2 = {} as ConfigContext<C, P, Result>): Promise<Result> => {
           const ctx: Record<any, any> = merge({}, context, { deep: Infinity });
           ctx.method = method || "get";
           typeof conf1 == "string" ? (ctx.url = conf1) : mergeContext(ctx, conf1);

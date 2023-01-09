@@ -2,7 +2,7 @@ import { Progress } from "@wsvaio/utils";
 import { createAPI } from "@wsvaio/api";
 
 // 创建api对象 泛型添加自定义属性
-export const { post, get, put, patch, del, use } = createAPI<{
+export const { post, get, put, patch, del, use, r } = createAPI<{
   success?: string;
   headers: Record<string, string>;
 }>({
@@ -29,5 +29,9 @@ use("finals")(async ctx => {
 });
 
 
-const testt = get("/a/b/:c?/:d?");
-testt({ p: { "c": 123 }, b: {}, q: {} })
+const a = r("get");
+const b = a("/a/b/:c?/:d?");
+const c = b({ p: {} });
+
+const testt = get<{ a: number, b: string }, {c: number}>("/a/b/:c?/:d?");
+testt({ p: {}, b: {}, q: {} });

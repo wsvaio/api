@@ -19,6 +19,7 @@ export const createAPI = <C extends object = {}>(config = {} as ConfigContext & 
     trace: request<C>(context)("trace"),
     options: request<C>(context)("options"),
     request: request<C>(context)()(),
+    r: request<C>(context),
     use:
       <K extends "befores" | "afters" | "errors" | "finals">(key: K) =>
         (...args: MiddlewareContext<C>[K]) =>
