@@ -49,6 +49,8 @@ export const core = async ctx => (ctx.response = await fetch(`${ctx.baseURL}${ct
 
 export const afters: Middleware<AfterContext>[] = [
   async ctx => {
+    // 恢复url
+    ctx.url = decodeURI(ctx.url);
     // 尝试恢复body为json
     if (is("String")(ctx.body))
       ctx.body = await trying(() => JSON.parse(ctx.body as string)).catch(() => ctx.body);
