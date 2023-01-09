@@ -32,7 +32,7 @@ export const befores: Middleware<BeforeContext>[] = [
     ctx.url = url.pathname + url.search + url.hash;
   },
 
-  async (ctx, next) => {
+  async ctx => {
     // 移除 GET/HEAD 请求方法的请求体
     if (["get", "head"].includes(ctx.method.toLowerCase())) ctx.body = null;
     // 添加Content-Type（因为要转换为JSON，fetch默认对字符串设置为text/plain）
@@ -41,16 +41,18 @@ export const befores: Middleware<BeforeContext>[] = [
         ctx.body = JSON.stringify(ctx.body);
         ctx.headers!["Content-Type"] = "application/json;charset=UTF-8";
       }).catch(() => { });
-    await next();
-    // 恢复body
-    if (is("String")(ctx.body))
-      ctx.body = await trying(() => JSON.parse(ctx.body as string)).catch(() => ctx.body);
+
   },
 ];
 
 export const core = async ctx => (ctx.response = await fetch(`${ctx.baseURL}${ctx.url}`, ctx));
 
 export const afters: Middleware<AfterContext>[] = [
+  async ctx => {
+    // 尝试恢复body为json
+    if (is("String")(ctx.body))
+      ctx.body = await trying(() => JSON.parse(ctx.body as string)).catch(() => ctx.body);
+  },
   // 设置data和dataType
   async ctx => {
     if (!ctx.response) return;
