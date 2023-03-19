@@ -1,7 +1,7 @@
 import { dateFormat, is, merge, trying } from "@wsvaio/utils";
 import type { AfterContext, BeforeContext, ErrorContext, FinalContext, Middleware } from "./types";
 
-export const befores: Middleware<BeforeContext>[] = [
+export const BEFORES: Middleware<BeforeContext>[] = [
   // 超时中断请求
   async (ctx) => {
     if (!ctx.timeout || ctx.signal) return;
@@ -49,9 +49,9 @@ export const befores: Middleware<BeforeContext>[] = [
   },
 ];
 
-export const core = async ctx => (ctx.response = await fetch(`${ctx.baseURL}${ctx.url}`, ctx));
+export const MIDDLE = async ctx => (ctx.response = await fetch(`${ctx.baseURL}${ctx.url}`, ctx));
 
-export const afters: Middleware<AfterContext>[] = [
+export const AFTERS: Middleware<AfterContext>[] = [
   async (ctx) => {
     // 尝试恢复body为json
     if (is("String")(ctx.body))
@@ -82,7 +82,7 @@ export const afters: Middleware<AfterContext>[] = [
   },
 ];
 
-export const errors: Middleware<ErrorContext>[] = [
+export const ERRORS: Middleware<ErrorContext>[] = [
   async (ctx, next) => {
     // AbortError AbortController触发 请求超时
     ctx.error.name == "AbortError"
@@ -93,7 +93,7 @@ export const errors: Middleware<ErrorContext>[] = [
   },
 ];
 
-export const finals: Middleware<FinalContext>[] = [
+export const FINALS: Middleware<FinalContext>[] = [
   async (ctx, next) => {
     await next();
     if (!ctx.log) return;

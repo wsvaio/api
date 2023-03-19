@@ -1,11 +1,9 @@
-import type { BaseContext, ConfigContext, MiddlewareContext } from "./types";
+import type { ConfigContext, Context, CreateAPIResult, MiddlewareContext } from "./types";
 import { createContext, mergeContext } from "./context";
 import { request } from "./request";
 
-export const createAPI = <C extends object = {}>(config = {} as ConfigContext & C) => {
-  const context: Record<any, any> = createContext();
-  mergeContext(context, config);
-
+export const createAPI = <C extends object = {}>(config = {} as ConfigContext & C): CreateAPIResult => {
+  const context = mergeContext(createContext(), config) as Context<C>;
   return {
     get: request<C>(context)("get"),
     post: request<C>(context)("post"),
@@ -16,18 +14,12 @@ export const createAPI = <C extends object = {}>(config = {} as ConfigContext & 
     connect: request<C>(context)("connect"),
     trace: request<C>(context)("trace"),
     options: request<C>(context)("options"),
-    request: request<C>(context)()(),
-    extendAPI: <C1 extends object = {}>(config1 = {} as ConfigContext & C1 & Partial<C>) => {
-      const context1: Record<any, any> = createContext();
-      mergeContext(context1, context);
-      mergeContext(context1, config1);
-      return createAPI(context1);
-    },
+    request: request<C>(context)(),
+    extendAPI: <Custom extends object = {}>(config1 = {} as ConfigContext & Partial<C> & Custom) =>
+      createAPI(mergeContext(mergeContext(createContext(), context), config1)),
     use:
-      <K extends "befores" | "afters" | "errors" | "finals">(key: K) =>
-      (...args: MiddlewareContext<C>[K]) =>
-        context[key].push(...args),
+      <K extends "before" | "after" | "error" | "final">(key: K) =>
+      (...args: MiddlewareContext<C>[`${K}s`]) =>
+        context[`${key}s`].push(...args),
   };
 };
-
-export const run = <T extends BaseContext>(ctx: T) => request({})()()(ctx);

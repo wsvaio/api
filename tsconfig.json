@@ -1,8 +1,19 @@
 {
   "compilerOptions": {
+    "target": "ESNext",
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
     "moduleResolution": "node",
-    "target": "ESNext"
+    
+    "esModuleInterop": true,
+
+    "noImplicitAny": false,
+    "baseUrl": "./",
+    "paths": {
+      "@wsvaio/api": ["src/index.ts"],
+      "@/*": [
+        "playground/*"
+      ],
+    }
   }
 }
