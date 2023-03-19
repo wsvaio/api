@@ -1,0 +1,63 @@
+{
+  "name": "@wsvaio/api",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "一个对fetch的封装库",
+  "author": "wsvaio <wsvaio@qq.com>",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/wsvaio",
+  "homepage": "https://github.com/wsvaio/api#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wsvaio/api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wsvaio/api/issues"
+  },
+  "keywords": [
+    "wsvaio",
+    "fetch",
+    "api"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    },
+    "./*": "./*"
+  },
+  "main": "index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "dev": "tsup --watch src",
+    "build": "tsup",
+    "commit": "czg",
+    "log": "conventional-changelog -p angular -i CHANGELOG.md -s",
+    "lint:eslint": "eslint --cache --max-warnings 0  \"{src,mock}/**/*.{vue,ts,tsx}\" --fix",
+    "lint:prettier": "prettier --write  \"src/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",
+    "lint:lint-staged": "lint-staged",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "@wsvaio/utils": "^0.0.17"
+  },
+  "devDependencies": {
+    "@wsvaio/commitlint-config": "^0.0.4",
+    "@wsvaio/eslint-config": "^0.0.4",
+    "czg": "^1.6.0",
+    "eslint": "^8.36.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.0",
+    "prettier": "^2.8.4",
+    "tsup": "^6.6.3",
+    "typescript": "^4.9.5"
+  }
+}
