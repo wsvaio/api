@@ -4,7 +4,7 @@ import { wrapper } from "./request";
 
 export const createAPI = <C extends object = {}>(
   config = {} as ConfigContext & C,
-): CreateAPIResult => {
+): CreateAPIResult<C> => {
   const context = mergeContext(createContext(), config) as Context<C>;
   return {
     get: wrapper<C>(context)("get"),
