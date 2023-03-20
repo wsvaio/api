@@ -1,7 +1,7 @@
 {
   "name": "@wsvaio/api",
   "type": "module",
-  "version": "1.0.1-1",
+  "version": "1.0.2-0",
   "description": "一个让你轻松使用 fetch 的封装库，支持前后置中间件、错误拦截、最终（finally）中间件、派生配置、柯里化配置、请求超时等",
   "author": "wsvaio <wsvaio@qq.com>",
   "license": "MIT",
