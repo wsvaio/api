@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { test1 } from "@/api";
+const ttt = test1({ q: { a: 1 }, config: true })({ p: { id: 123 }, config: true });
 const handleClick = () => {
-  test1();
+  ttt({ b: { abc: 123 }, config: true })();
+  ttt({ b: { cba: 123 }, afters: [async (ctx) => {}], config: true })();
 };
 </script>
 

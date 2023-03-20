@@ -1,4 +1,4 @@
-import { compose, merge } from "@wsvaio/utils";
+import { compose, merge, omit } from "@wsvaio/utils";
 import { createContext, mergeContext } from "./context";
 import type {
   AfterContext,
@@ -21,27 +21,26 @@ export const run = <T extends Context>(ctx: T) =>
     .catch(error => compose(...ERRORS, ...ctx.errors)(merge(ctx as ErrorContext, { error })))
     .finally(() => compose(...FINALS, ...ctx.finals)(ctx as FinalContext));
 
-export const request
+export const wrapper
   = <C>(context: Context<C>) =>
-    (method?: Context["method"]): CurryingResult<C> => {
-      const ctx = mergeContext(createContext(), context);
-      ctx.method = method || "get";
-      console.log(ctx);
-      function currying<P extends object = {}, R = any>(config: ConfigContext<C, P, R> & { config: true } | string): CurryingResult<C, P, R>;
-      function currying<P extends object = {}, R = any>(config?: ConfigContext<C, P, R> & { config?: false }): Promise<R>;
-      function currying<P extends object = {}, R = any>(config = {} as ConfigContext<C, P, R> & { config?: boolean } | string) {
-        if (typeof config === "string") {
-          ctx.url = config;
-          return currying;
-        }
-        if (config && config.config) {
-          mergeContext(ctx, config);
-          return currying;
-        }
-        else {
-          mergeContext(config, ctx);
-          return run(config).then(() => ctx.data);
-        }
-      }
-      return currying;
-    };
+    (method?: Context["method"]): CurryingResult<C> =>
+      currying<C>({ ...context, method } as Context<C>);
+
+function currying<C>(context: Context<C>) {
+  function result<P extends object = {}, R = any>(
+    config: (ConfigContext<C, P, R> & { config: true }) | string,
+  ): CurryingResult<C, P, R>;
+  function result<P extends object = {}, R = any>(
+    config?: ConfigContext<C, P, R> & { config?: false },
+  ): Promise<R>;
+  function result<P extends object = {}, R = any>(
+    config = {} as (ConfigContext<C, P, R> & { config?: boolean }) | string,
+  ) {
+    const ctx = mergeContext(createContext(), context);
+    if (typeof config === "string")
+      config = { url: config, config: true } as ConfigContext<C, P, R> & { config: true };
+    mergeContext(ctx, omit(config, ["config"]));
+    return config?.config ? currying(ctx) : run(ctx).then(() => ctx.data);
+  }
+  return result;
+}

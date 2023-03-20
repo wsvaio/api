@@ -89,7 +89,7 @@ export const ERRORS: Middleware<ErrorContext>[] = [
       ? (ctx.message = `请求超时：${ctx.timeout}`)
       : (ctx.message = ctx.error.message);
     await next();
-    throw ctx.error;
+    if (ctx.error) throw ctx.error;
   },
 ];
 

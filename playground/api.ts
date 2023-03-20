@@ -11,25 +11,46 @@ export const { post, get, put, patch, del, use, extendAPI } = createAPI<{
   headers: {},
 });
 
-// use("before")(async (ctx) => {
-//   console.log("before");
-// });
+use("before")(async (ctx) => {
+  console.log("before");
+});
 
-// use("after")(async (ctx) => {
-//   console.log("after");
-// });
+use("before")(async (ctx) => {
+  console.log("before");
+});
 
-// use("error")(async (ctx) => {
-//   console.log("error");
-// });
+use("before")(async (ctx) => {
+  console.log("before");
+});
 
-// use("final")(async (ctx) => {
-//   console.log("final");
-// });
+use("after")(async (ctx) => {
+  console.log("after");
+});
+
+use("error")(async (ctx) => {
+  console.log("error");
+});
+
+use("final")(async (ctx) => {
+  console.log("final");
+});
 
 export const extendedAPI = extendAPI({
   baseURL: "/ipa",
+  befores: [
+    async (ctx) => {
+      console.log("jfaklsdjflkasjdkfljaslkdjflkasdjfklasjd;flakjsd", ctx);
+    },
+  ],
 
+});
+
+extendedAPI.use("before")(async (ctx) => {
+  console.log("extendedAPI before");
+});
+
+extendedAPI.use("before")(async (ctx) => {
+  console.log("extendedAPI before");
 });
 
 extendedAPI.use("before")(async (ctx) => {

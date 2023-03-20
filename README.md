@@ -1,160 +1,123 @@
-# 一个对 fetch 的封装库
+# @wsvaio/api
+
+[![Size](https://img.shields.io/bundlephobia/minzip/@wsvaio/api/latest)](https://www.npmjs.com/package/@wsvaio/api) [![Version](https://img.shields.io/npm/v/@wsvaio/api)](https://www.npmjs.com/package/@wsvaio/api) [![Languages](https://img.shields.io/github/languages/top/attojs/vue-request)](https://www.npmjs.com/package/@wsvaio/api) [![License](https://img.shields.io/npm/l/vue-request)](https://www.npmjs.com/package/@wsvaio/api) [![Star](https://img.shields.io/github/stars/wsvaio/api)](https://github.com/wsvaio/api) [![Download](https://img.shields.io/npm/dm/@wsvaio/api)](https://www.npmjs.com/package/@wsvaio/api)
 
 ## 快速使用
 
 ```typescript
+// 创建配置
 import { createAPI } from "@wsvaio/api";
-export const { get, use } = createAPI({
-  baseURL: "/api",
-});
-use("befores")(async ctx => {
-  ctx.headers["auth"] = "...";
-});
-use("afters")(async ctx => {
-  console.log(ctx.data); // { code: 0, msg: 'success', data: 'xxxx' }
-  ctx.data = ctx.data.data;
-});
-
-export const getTest = get("/user");
-
-const data = await getTest({ query: { id: 1 } }); // get: /api/user?id=1
-console.log(data); // xxxx
+export const { get } = createAPI();
+// 发送请求
+get({ url: "/test" });
 ```
 
 ## 中间件
 
-### 中间件有四种类型
-
-1. before: 前置中间件，请求发出前调用
-2. after: 后置中间件，请求发出后调用
-3. error: 错误中间件，发生错误时调用
-4. final: 最终中间件，最后才会调用
-
-### 配置中间件
-
-1. 创建时配置
-
 ```typescript
-export const api = createAPI({
-  befores: [async ctx => console.log("before")],
+// 创建配置
+import { createAPI } from "@wsvaio/api";
+export const { get, use } = createAPI();
+
+// 中间件
+// 前置
+use("before")(async ctx => {
+  ctx.headers.Authorization = "token";
 });
-api.use("befores")(async ctx => console.log("before"));
-```
-
-2. 调用时配置
-
-```typescript
-const api = createAPI({
-  method: "get",
-  befores: [async ctx => console.log("before")],
+// 后置
+use("after")(async ctx => {
+  if (ctx.data.code != 200) throw Error();
 });
-// 中间件的配置不会覆盖创建时的配置，与创建时配置合并，其他配置则会覆盖，如method
-api.request({ method: "post", befores: [async ctx => console.log("before")] });
-```
+// 错误
+use("error")(async ctx => {
+  console.log(ctx.error);
+});
+// 最终
+use("final")(async ctx => {
+  console.log(ctx);
+});
 
-### 运行机制
-
-运行机制使用了洋葱模型
-
-```typescript
-export const api = createAPI();
-
-api.use("befores")(
-  async ctx => {
-    // 没有接收next参数会自动调用next
-    console.log("before1");
-  },
-  async (ctx, next) => {
-    // 接受了next参数需要手动调用next才能执行下一个中间件
-    console.log("before2 in");
-    await next();
-    // 后续中间件执行完毕后执行
-    console.log("before2 out");
-  },
-  async (ctx, next) => {
-    // 接受了next参数，没有调用next，之后的中间件都不会调用
-    console.log("before3");
-  },
-);
+// 发送请求
+get({ url: "/test" });
 ```
 
 ## 发送请求
 
 ```typescript
-const api = createAPI();
+// query & param & body
+// 简写
+get({ q: {}, p: {}, b: {} });
+// 全写，优先级高，并且body支持更多类型
+get({ query: {}, param: {}, body: {} });
+```
 
-// api.request方法会直接调用，其它请求方法需要调用两次，方便配置
-// 先配置再调用
-const getTest = api.get("/test");
-getTest({ query: { id: 1 } });
-// 直接发送请求
-api.request({ url: "/test", query: { id: 1 } });
+## Typescirpt
 
-// 泛型支持，P：body、query、param属性的类型提示，R：响应内容的类型
-type P = { id: number };
-type R = { message: string };
-const postTest = api.post<P, R>("/test/:id?");
-const data = await postTest({
-  body: { id: 1 }, // 设置请求体
-  param: { id: 1 }, // param会替换对应的/:key
-  query: { id: 1 }, // query会拼接到url后
+```typescript
+// 泛型支持
+type Params = { filed1: string };
+type Result = { code: number; data: any; msg: string };
+const result = await get<Params, Result>({ b: {}, q: {}, p: {} });
+// Params 可以为body query param提供类型提示
+// Result 可以设置result的类型
+```
 
-  // b、p、q等同body、param、query，优先级比它们低，b只能接受对象类型，body可以接受FormData、ArrayBuffer、Blob等复杂类型；
-  b: {},
-  p: {},
-  q: {},
+## 柯里化配置
+
+只要传入 config = true，请求就不会调用，可继续柯里化配置  
+配置项可以是一个字符串，该字符串会被赋值给 ctx.url，并且将 ctx.config 视为 true  
+配置隔离，不会发生污染
+
+```typescript
+// 创建配置
+import { createAPI } from "@wsvaio/api";
+export const { get } = createAPI();
+// 柯里化配置
+const getTest1 = get({ url: "/test", config: true });
+const getTest2 = getTest2({ q: { p1: 1 }, config: true });
+const getTest3 = get("/test");
+// 发送请求
+getTest1({ q: { p1: 1 } });
+getTest2({ q: { p2: 2 } });
+getTest3();
+// or
+get({ q: {}, config: true })({ p: {}, config: true })({ b: {}, config: true })();
+// or
+get("/test/:id")({ p: { id: 1 } }); // get /test/1
+```
+
+## 派生配置
+
+```typescript
+// 创建配置
+import { createAPI } from "@wsvaio/api";
+export const { extendAPI } = createAPI({
+  baseURL: "/api",
+});
+
+// 派生配置，继承父级的配置
+const { get } = extendAPI();
+
+// 发送请求
+get({ url: "/test" });
+```
+
+## 日志打印
+
+```typescript
+// 创建配置
+import { createAPI } from "@wsvaio/api";
+export const { get } = createAPI({
+  log: true, // 日志打印
 });
 ```
 
-## Context
-
-完整的 Context 包括以下属性
+## 超时中断请求
 
 ```typescript
-type Context = {
-  // fetch配置
-  cache?: RequestCache;
-  credentials?: RequestCredentials;
-  integrity?: string;
-  keepalive?: boolean;
-  mode?: RequestMode;
-  redirect?: RequestRedirect;
-  referrer?: string;
-  referrerPolicy?: ReferrerPolicy;
-  signal?: AbortSignal | null;
-  window?: null;
-  // 以上为fetch配置
-
-  method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "connect" | "trace";
-  headers: HeadersInit;
-  log: boolean; // 控制台是否打印日志
-  timeout: number; // 请求超时的毫秒数
-  url: string; // 请求地址
-  baseURL: string; // 请求根地址
-
-  body: Record<any, any> | BodyInit | null; // 请求体
-  query: Record<any, any> | null; // 请求的query参数，会自动拼接到url之后
-  param: Record<any, any> | null; // 请求的param参数，会自动替换url对应的/:key
-
-  b: Record<any, any>; // 与 body 相同，优先级低
-  q: Record<any, any>; // 与 query 相同，优先级低
-  p: Record<any, any>; // 与 param 相同，优先级低
-
-  error: Error; // 存储发生错误后的错误对象
-
-  data: R; // 响应内容
-  dataType?: "arrayBuffer" | "blob" | "formData" | "json" | "text"; // response 解析返回值的方式，默认先解析为text，再尝试解析成json
-  status: Response["status"];
-  statusText: Response["statusText"];
-  ok: Response["ok"];
-  response: Response; // 发送请求后的响应对象
-
-  message: string; // 存储消息信息，比如发生错误后的error.message
-
-  befores: Middleware[]; // 前置中间件
-  core: Middleware; // 核心中间件，发送请求的中间件
-  afters: Middleware[]; // 后置中间件
-  errors: Middleware[]; // 错误中间件
-  finals: Middleware[]; // 最终中间件
-};
+// 创建配置
+import { createAPI } from "@wsvaio/api";
+export const { get } = createAPI({
+  timeout: 5000, // 超时中断请求
+});
 ```

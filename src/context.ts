@@ -1,28 +1,6 @@
 import { merge, omit } from "@wsvaio/utils";
 import type { Context, MiddlewareContext } from "./types";
-const CONTEXT: Context = {
-  method: "get",
-  headers: {},
-  log: false,
-  timeout: 0,
-  url: "/",
-  baseURL: "",
-
-  b: {},
-  q: {},
-  p: {},
-
-  query: null,
-  body: null,
-  param: null,
-
-  befores: [],
-  afters: [],
-  errors: [],
-  finals: [],
-
-  message: "",
-};
+const CONTEXT: Context = {};
 
 export const mergeContext = (context1: Context, context2: Context) => {
   const keys: (keyof MiddlewareContext)[] = ["befores", "afters", "errors", "finals"];
@@ -37,6 +15,33 @@ export const mergeContext = (context1: Context, context2: Context) => {
   });
 };
 
-export const createContext = (): Context => mergeContext({}, CONTEXT);
+export const createContext = (): Context =>
+  mergeContext(
+    {
+      method: "get",
+      headers: {},
+      log: false,
+      timeout: 0,
+      url: "/",
+      baseURL: "",
 
-export const setGlobalContext = <C extends object = {}>(config: Context<C>) => mergeContext(CONTEXT, config);
+      b: {},
+      q: {},
+      p: {},
+
+      query: null,
+      body: null,
+      param: null,
+
+      befores: [],
+      afters: [],
+      errors: [],
+      finals: [],
+
+      message: "",
+    },
+    CONTEXT,
+  );
+
+export const setGlobalContext = <C extends object = {}>(config: Context<C>) =>
+  mergeContext(CONTEXT, config);
