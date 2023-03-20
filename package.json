@@ -40,6 +40,8 @@
     "dev": "vite ./playground",
     "build": "tsup",
     "commit": "czg",
+    "prepatch": "npm run build && npm version prepatch && npm publish",
+    "patch": "npm run build && npm version patch && npm publish",
     "log": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "lint:eslint": "eslint --cache --max-warnings 0  \"{src,mock}/**/*.{vue,ts,tsx}\" --fix",
     "lint:prettier": "prettier --write  \"src/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",
