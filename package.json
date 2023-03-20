@@ -40,6 +40,7 @@
     "dev": "vite ./playground",
     "build": "tsup",
     "commit": "czg",
+    "prerelease": "npm run build && npm version prerelease && npm publish",
     "prepatch": "npm run build && npm version prepatch && npm publish",
     "patch": "npm run build && npm version patch && npm publish",
     "log": "conventional-changelog -p angular -i CHANGELOG.md -s",
