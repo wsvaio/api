@@ -17,6 +17,8 @@
   "keywords": [
     "wsvaio",
     "fetch",
+    "request",
+    "http",
     "api"
   ],
   "exports": {
@@ -50,7 +52,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@wsvaio/utils": "^0.0.17"
+    "@wsvaio/utils": "^1.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.4.4",
