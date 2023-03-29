@@ -15,24 +15,24 @@ export const BEFORES: Middleware<BeforeContext>[] = [
     ctx.param ||= ctx.p;
     ctx.query ||= ctx.q;
     ctx.body ||= ctx.b;
+
     // param拼接
     const body = is("Object")(ctx.body) ? ctx.body : {};
-    const keys = ctx.url
-      .split("/")
-      .filter(item => item.startsWith(":"))
-      .map(item => item.substring(1, item.endsWith("?") ? item.length - 1 : item.length));
-    for (const key of keys) {
+    ctx.url.match(/:[\w_][\w\d_]*\??/gims).forEach((matched) => {
+      const key = matched.slice(1, matched.length - (matched.endsWith("?") ? 1 : 0));
       const val = ctx.param[key] || body[key] || "";
-      ctx.url = ctx.url.replace(new RegExp(`/:${key}\\?`, "g"), val ? `/${val}` : val);
-    }
+      if (!val && !matched.endsWith("?")) return;
+      ctx.url = ctx.url.replace(matched, val);
+    });
+    ctx.url = ctx.url.replace(/\/+/imgs, "/");
 
     // query拼接
     ctx.url += ctx.url.includes("?") ? "&" : "?";
-    for (const [k, v] of Object.entries(ctx.query)) {
+    Object.entries(ctx.query).forEach(([k, v]) =>
       Array.isArray(v)
         ? v.forEach(item => (ctx.url += `${k}=${item}&`))
-        : (![null, undefined, ""].includes(v) && (ctx.url += `${k}=${v}&`));
-    }
+        : (![null, undefined, ""].includes(v) && (ctx.url += `${k}=${v}&`)),
+    );
     ctx.url = ctx.url.substring(0, ctx.url.length - 1);
   },
 

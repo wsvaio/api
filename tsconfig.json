@@ -15,5 +15,6 @@
         "playground/*"
       ],
     }
-  }
+  },
+  "exclude": ["node_modules"]
 }

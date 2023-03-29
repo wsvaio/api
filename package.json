@@ -40,11 +40,9 @@
   },
   "scripts": {
     "dev": "vite ./playground",
-    "build": "tsup",
     "commit": "czg",
-    "prerelease": "npm run build && npm version prerelease && npm publish",
-    "prepatch": "npm run build && npm version prepatch && npm publish",
-    "patch": "npm run build && npm version patch && npm publish",
+    "build": "esno ./scripts/index.ts && tsup",
+    "prepublishOnly": "npm run build",
     "log": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "lint:eslint": "eslint --cache --max-warnings 0  \"{src,mock}/**/*.{vue,ts,tsx}\" --fix",
     "lint:prettier": "prettier --write  \"src/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",
@@ -52,7 +50,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@wsvaio/utils": "^1.0.0"
+    "@wsvaio/utils": "latest"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.4.4",

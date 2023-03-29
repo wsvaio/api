@@ -11,29 +11,29 @@ export const { post, get, put, patch, del, use, extendAPI } = createAPI<{
   headers: {},
 });
 
-use("before")(async (ctx) => {
-  console.log("before");
-});
+// use("before")(async (ctx) => {
+//   console.log("before");
+// });
 
-use("before")(async (ctx) => {
-  console.log("before");
-});
+// use("before")(async (ctx) => {
+//   console.log("before");
+// });
 
-use("before")(async (ctx) => {
-  console.log("before");
-});
+// use("before")(async (ctx) => {
+//   console.log("before");
+// });
 
-use("after")(async (ctx) => {
-  console.log("after");
-});
+// use("after")(async (ctx) => {
+//   console.log("after");
+// });
 
-use("error")(async (ctx) => {
-  console.log("error");
-});
+// use("error")(async (ctx) => {
+//   console.log("error");
+// });
 
-use("final")(async (ctx) => {
-  console.log("final");
-});
+// use("final")(async (ctx) => {
+//   console.log("final");
+// });
 
 export const extendedAPI = extendAPI({
   baseURL: "/ipa",
@@ -45,18 +45,18 @@ export const extendedAPI = extendAPI({
 
 });
 
-extendedAPI.use("before")(async (ctx) => {
-  console.log("extendedAPI before");
-});
+// extendedAPI.use("before")(async (ctx) => {
+//   console.log("extendedAPI before");
+// });
 
-extendedAPI.use("before")(async (ctx) => {
-  console.log("extendedAPI before");
-});
+// extendedAPI.use("before")(async (ctx) => {
+//   console.log("extendedAPI before");
+// });
 
-extendedAPI.use("before")(async (ctx) => {
-  console.log("extendedAPI before");
-});
+// extendedAPI.use("before")(async (ctx) => {
+//   console.log("extendedAPI before");
+// });
 
 // extendedAPI.get("/wdf/:id")();
 
-export const test1 = extendedAPI.get("/wdf/:id?");
+export const test1 = extendedAPI.get("/wdf/:id?/:di??abc=1&cba=2");
