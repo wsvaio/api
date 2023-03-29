@@ -59,4 +59,4 @@ export const extendedAPI = extendAPI({
 
 // extendedAPI.get("/wdf/:id")();
 
-export const test1 = extendedAPI.get("/wdf/:id?/:di??abc=1&cba=2");
+export const test1 = extendedAPI.get("/wdf");
