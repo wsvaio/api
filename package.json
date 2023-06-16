@@ -41,6 +41,7 @@
   "scripts": {
     "dev": "vite ./playground",
     "commit": "pnpm docs:build && git add docs && czg",
+		"docs:build": "pnpm typedoc",
     "build": "tsup",
     "prepublishOnly": "pnpm build",
     "log": "conventional-changelog -p angular -i CHANGELOG.md -s",
