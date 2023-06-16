@@ -1,7 +1,7 @@
 {
   "name": "@wsvaio/api",
   "type": "module",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "一个使用 TypeScript 编写，基于 fetch 的网络请求库，主要用于处理 HTTP 请求",
   "author": "wsvaio <wsvaio@qq.com>",
   "license": "MIT",
@@ -41,7 +41,7 @@
   "scripts": {
     "dev": "vite ./playground",
     "commit": "pnpm docs:build && git add docs && czg",
-		"docs:build": "pnpm typedoc",
+    "docs:build": "pnpm typedoc",
     "build": "tsup",
     "prepublishOnly": "pnpm build",
     "log": "conventional-changelog -p angular -i CHANGELOG.md -s",
