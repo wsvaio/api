@@ -4,7 +4,7 @@
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
     "moduleResolution": "node",
-    
+
     "esModuleInterop": true,
 
     "noImplicitAny": false,
@@ -16,5 +16,5 @@
       ],
     }
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
 }
