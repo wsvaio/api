@@ -1,21 +1,89 @@
 import type { Middleware } from "@wsvaio/utils";
 export type { Middleware };
-/**
- * 定义响应类型
- * @template R 响应数据类型
- */
-export interface ResponseType<R = any> {
+
+interface ResponseType<R = any> {
 	data: R;
 	status: Response["status"];
 	statusText: Response["statusText"];
 	ok: Response["ok"];
 	response: Response & { data: any };
 }
-/**
- * 定义请求类型
- * @template P 请求参数类型
- */
-export interface RequestType<P = {}> {
+
+// export type Params<
+// 	T extends {
+// 		B?: Record<any, any>;
+// 		Q?: Record<any, any>;
+// 		P?: Record<any, any>;
+// 	}
+// > = (
+// 	| {
+// 			body?: (Partial<T["B"]> & Record<any, any>) | BodyInit | null;
+// 			b: T["B"];
+// 	  }
+// 	| {
+// 			body: (Partial<T["B"]> & Record<any, any>) | BodyInit | null;
+// 			b?: T["B"];
+// 	  }
+// ) &
+// 	(
+// 		| {
+// 				query?: (Partial<T["Q"]> & Record<any, any>) | null;
+// 				q: T["Q"];
+// 		  }
+// 		| {
+// 				query: (Partial<T["Q"]> & Record<any, any>) | null;
+// 				q?: T["Q"];
+// 		  }
+// 	) &
+// 	(
+// 		| {
+// 				param?: (Partial<T["P"]> & Record<any, any>) | null;
+// 				p: T["P"];
+// 		  }
+// 		| {
+// 				param: (Partial<T["P"]> & Record<any, any>) | null;
+// 				p?: T["P"];
+// 		  }
+// 	);
+
+export type Params<
+	T extends {
+		B?: Record<any, any>;
+		Q?: Record<any, any>;
+		P?: Record<any, any>;
+	}
+> = (
+	| {
+			body: Record<any, any>;
+	  }
+	| {
+			b: T["B"];
+	  }
+) &
+	(
+		| {
+				query: Record<any, any>;
+		  }
+		| {
+				q: T["Q"];
+		  }
+	) &
+	(
+		| {
+				param: Record<any, any>;
+		  }
+		| {
+				p: T["P"];
+		  }
+	);
+
+type RequestType<
+	T extends {
+		B?: Record<any, any>;
+		Q?: Record<any, any>;
+		P?: Record<any, any>;
+	}
+> = {
 	// fetch配置
 	cache?: RequestCache;
 	credentials?: RequestCredentials;
@@ -34,187 +102,88 @@ export interface RequestType<P = {}> {
 	url: string;
 	baseURL: string;
 
-	body: (Partial<P> & Record<any, any>) | BodyInit | null;
-	query: (Partial<P> & Record<any, any>) | null;
-	param: (Partial<P> & Record<any, any>) | null;
+	body: Record<any, any> | BodyInit | null;
+	query: Record<any, any> | null;
+	param: Record<any, any> | null;
 
-	b: Partial<P> & Record<any, any>;
-	q: Partial<P> & Record<any, any>;
-	p: Partial<P> & Record<any, any>;
-}
-/**
- * 中间件上下文
- * @template C 上下文类型
- * @template P 请求参数类型
- * @template R 响应数据类型
- */
-export interface MiddlewareContext<C = {}, P = {}, R = any> {
-	befores: Middleware<BeforeContext<C, P, R>>[]; // 请求前中间件
-	afters: Middleware<AfterContext<C, P, R>>[]; // 请求后中间件
-	errors: Middleware<ErrorContext<C, P, R>>[]; // 请求错误中间件
-	finals: Middleware<FinalContext<C, P, R>>[]; // 请求结束中间件
-}
-/**
- * 基础上下文类型
- */
-export interface BaseContext {
+	b: T["B"] & Record<any, any>;
+	q: T["Q"] & Record<any, any>;
+	p: T["P"] & Record<any, any>;
+};
+
+export type BasicContext<
+	T extends {
+		B?: Record<any, any>;
+		Q?: Record<any, any>;
+		P?: Record<any, any>;
+		C?: Record<any, any>;
+		R?: any;
+	}
+> = {
 	log: boolean;
 	timeout: number;
 	message: string;
 
 	dataType?: "arrayBuffer" | "blob" | "formData" | "json" | "text";
-}
 
-/**
- * 配置上下文类型
- * @template C 上下文类型
- * @template P 请求参数类型
- * @template R 响应数据类型
- */
-export type ConfigContext<C = {}, P = {}, R = any> = Partial<
-	BaseContext & MiddlewareContext<C, P, R> & RequestType<P> & C
->;
-/**
- * 请求前中间件上下文类型
- * @template C 上下文类型
- * @template P 请求参数类型
- * @template R 响应数据类型
- */
-export type BeforeContext<C = {}, P = {}, R = any> = BaseContext & MiddlewareContext<C, P, R> & RequestType<P> & C;
-/**
- * 请求后中间件上下文类型
- * @template C 上下文类型
- * @template P 请求参数类型
- * @template R 响应数据类型
- */
-export type AfterContext<C = {}, P = {}, R = any> = BaseContext &
-	MiddlewareContext<C, P, R> &
-	RequestType<P> &
-	ResponseType<R> &
-	C;
-/**
- * 请求错误中间件上下文类型
- * @template C 上下文类型
- * @template P 请求参数类型
- * @template R 响应数据类型
- */
-export type ErrorContext<C = {}, P = {}, R = any> = BaseContext &
-	MiddlewareContext<C, P, R> &
-	RequestType<P> &
-	Partial<ResponseType<R>> &
-	C & { error: Error };
-/**
- * 请求结束中间件上下文类型
- * @template C 上下文类型
- * @template P 请求参数类型
- * @template R 响应数据类型
- */
-export type FinalContext<C = {}, P = {}, R = any> = BaseContext &
-	MiddlewareContext<C, P, R> &
-	RequestType<P> &
-	Partial<ResponseType<R>> &
-	C & { error?: Error };
+	befores: Middleware<BeforeContext<T>>[];
+	afters: Middleware<AfterContext<T>>[];
+	errors: Middleware<ErrorContext<T>>[];
+	finals: Middleware<FinalContext<T>>[];
+} & T["C"];
 
-/**
- * 上下文类型
- * @template C 上下文类型
- */
-export type Context<C = {}> = Partial<FinalContext<C>>;
+export type BeforeContext<
+	T extends {
+		B?: Record<any, any>;
+		Q?: Record<any, any>;
+		P?: Record<any, any>;
+		C?: Record<any, any>;
+		R?: any;
+	}
+> = BasicContext<T> & RequestType<T>;
 
-/**
- * CurryingResult 类型定义，用于表示柯里化后的函数返回类型。
- * @template C 上下文类型
- * @template Param 请求参数类型
- * @template Result 响应数据类型
- */
-export interface CurryingResult<C, Param extends object = {}, Result = any> {
-	/**
-	 * 用于支持链式调用的方法。
-	 * @template P 新的请求参数类型
-	 * @template R 新的响应数据类型
-	 * @param config 配置对象，包含 config 属性设置为 true 或者传入字符串
-	 * @returns 返回一个新的 CurryingResult 实例，支持进一步的链式调用
-	 */
-	<P extends object = {}, R = Result>(
-		config: (ConfigContext<C, P & Param, R> & { config: true }) | string
-	): CurryingResult<C, P & Param, R>;
+export type AfterContext<
+	T extends {
+		B?: Record<any, any>;
+		Q?: Record<any, any>;
+		P?: Record<any, any>;
+		C?: Record<any, any>;
+		R?: any;
+	}
+> = BasicContext<T> & RequestType<T> & ResponseType<T["R"]>;
 
-	/**
-	 * 用于执行请求并返回 Promise 的方法。
-	 * @template P 请求参数类型
-	 * @template R 响应数据类型
-	 * @param config 可选的配置对象
-	 * @returns 返回一个 Promise，当请求成功时，Promise 将解析为响应数据类型 R 的值
-	 */
-	<P extends object = {}, R = Result>(config?: ConfigContext<C, P & Param, R> & { config?: false }): Promise<R>;
-}
-/**
- * 创建API函数的返回类型
- * @template C 上下文类型
- */
-export interface CreateAPIResult<C extends object = {}> {
-	/**
-	 * GET 请求方法
-	 */
-	get: CurryingResult<C, {}, any>;
+export type ErrorContext<
+	T extends {
+		B?: Record<any, any>;
+		Q?: Record<any, any>;
+		P?: Record<any, any>;
+		C?: Record<any, any>;
+		R?: any;
+	}
+> = BasicContext<T> & RequestType<T> & Partial<ResponseType<T["R"]>> & { error: Error };
 
-	/**
-	 * POST 请求方法
-	 */
-	post: CurryingResult<C, {}, any>;
+export type FinalContext<
+	T extends {
+		B?: Record<any, any>;
+		Q?: Record<any, any>;
+		P?: Record<any, any>;
+		C?: Record<any, any>;
+		R?: any;
+	}
+> = BasicContext<T> & RequestType<T> & Partial<ResponseType<T["R"]>> & { error?: Error };
 
-	/**
-	 * PUT 请求方法
-	 */
-	put: CurryingResult<C, {}, any>;
-
-	/**
-	 * PATCH 请求方法
-	 */
-	patch: CurryingResult<C, {}, any>;
-
-	/**
-	 * DELETE 请求方法
-	 */
-	del: CurryingResult<C, {}, any>;
-
-	/**
-	 * HEAD 请求方法
-	 */
-	head: CurryingResult<C, {}, any>;
-
-	/**
-	 * CONNECT 请求方法
-	 */
-	connect: CurryingResult<C, {}, any>;
-
-	/**
-	 * TRACE 请求方法
-	 */
-	trace: CurryingResult<C, {}, any>;
-
-	/**
-	 * OPTIONS 请求方法
-	 */
-	options: CurryingResult<C, {}, any>;
-
-	/**
-	 * 自定义请求方法
-	 */
-	request: CurryingResult<C, {}, any>;
-
-	/**
-	 * 扩展 API 方法，用于创建具有自定义配置的新 API 实例
-	 * @param config1 可选的自定义配置对象
-	 */
-	extendAPI: <Custom extends object = {}>(
-		config1?: ConfigContext & Partial<C> & Custom
-	) => CreateAPIResult<Partial<C> & Custom>;
-	/**
-	 * 使用中间件
-	 * @param key 中间件类型，包括 "error"、"before"、"after" 和 "final"
-	 */
-	use: <K extends "error" | "before" | "after" | "final">(
-		key: K
-	) => (...args: MiddlewareContext<C, {}, any>[`${K}s`]) => number;
-}
+export type Context<
+	T extends {
+		B?: Record<any, any>;
+		Q?: Record<any, any>;
+		P?: Record<any, any>;
+		C?: Record<any, any>;
+		R?: any;
+	} = {
+		B: Record<any, any>;
+		Q: Record<any, any>;
+		P: Record<any, any>;
+		C: Record<any, any>;
+		R: any;
+	}
+> = Partial<BasicContext<T> & RequestType<T> & ResponseType<T["R"]> & { error: Error }>;

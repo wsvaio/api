@@ -1,7 +1,7 @@
 import { createAPI } from "@wsvaio/api";
 
 // 创建api对象 泛型添加自定义属性
-export const { post, get, put, patch, del, use, extendAPI } = createAPI<{
+export const { get, use, extendAPI } = createAPI<{
 	success?: string;
 	headers: Record<string, string>;
 }>({
@@ -14,43 +14,3 @@ export const { post, get, put, patch, del, use, extendAPI } = createAPI<{
 use("before")(async () => {
 	console.log("before");
 });
-
-// use("before")(async (ctx) => {
-//   console.log("before");
-// });
-
-// use("before")(async (ctx) => {
-//   console.log("before");
-// });
-
-// use("after")(async (ctx) => {
-//   console.log("after");
-// });
-
-// use("error")(async (ctx) => {
-//   console.log("error");
-// });
-
-// use("final")(async (ctx) => {
-//   console.log("final");
-// });
-
-export const extendedAPI = extendAPI<{}>({
-	baseURL: "/ipa",
-});
-
-// extendedAPI.use("before")(async (ctx) => {
-//   console.log("extendedAPI before");
-// });
-
-// extendedAPI.use("before")(async (ctx) => {
-//   console.log("extendedAPI before");
-// });
-
-// extendedAPI.use("before")(async (ctx) => {
-//   console.log("extendedAPI before");
-// });
-
-// extendedAPI.get("/wdf/:id")();
-
-export const test1 = extendedAPI.get("/wdf");

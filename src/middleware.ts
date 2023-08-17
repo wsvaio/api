@@ -1,16 +1,7 @@
-/**
- * @module middlewares
- * @description 包含请求前、请求后、错误处理及最终处理的中间件函数
- */
-
 import { dateFormat, is, merge, trying } from "@wsvaio/utils";
-import type { AfterContext, BeforeContext, ErrorContext, FinalContext, Middleware } from "./types.d";
+import type { Context, Middleware } from "./types.d";
 
-/**
- * 请求前中间件函数数组
- * @type {Middleware<BeforeContext>[]}
- */
-export const BEFORES: Middleware<BeforeContext>[] = [
+export const BEFORES: Middleware<Context>[] = [
 	// 超时中断请求
 	async ctx => {
 		if (!ctx.timeout || ctx.signal) return;
@@ -37,7 +28,7 @@ export const BEFORES: Middleware<BeforeContext>[] = [
 
 		// query拼接
 		ctx.url += ctx.url.includes("?") ? "&" : "?";
-		Object.entries(ctx.query).forEach(([k, v]) =>
+		Object.entries<any>(ctx.query).forEach(([k, v]) =>
 			Array.isArray(v)
 				? v.forEach(item => (ctx.url += `${k}=${item}&`))
 				: ![null, undefined, ""].includes(v) && (ctx.url += `${k}=${v}&`)
@@ -57,16 +48,10 @@ export const BEFORES: Middleware<BeforeContext>[] = [
 		}
 	},
 ];
-/**
- * 请求中间件函数
- * @type {Middleware}
- */
+
 export const MIDDLE = async ctx => (ctx.response = await fetch(`${ctx.baseURL}${ctx.url}`, ctx));
-/**
- * 请求后中间件函数数组
- * @type {Middleware<AfterContext>[]}
- */
-export const AFTERS: Middleware<AfterContext>[] = [
+
+export const AFTERS: Middleware<Context>[] = [
 	async ctx => {
 		// 尝试恢复body为json
 		if (is("String")(ctx.body)) ctx.body = await trying(() => JSON.parse(ctx.body as string)).catch(() => ctx.body);
@@ -93,11 +78,8 @@ export const AFTERS: Middleware<AfterContext>[] = [
 		if (!ctx.response.ok) throw new Error(ctx.message);
 	},
 ];
-/**
- * 错误处理中间件函数数组
- * @type {Middleware<ErrorContext>[]}
- */
-export const ERRORS: Middleware<ErrorContext>[] = [
+
+export const ERRORS: Middleware<Context>[] = [
 	async (ctx, next) => {
 		// AbortError AbortController触发 请求超时
 		ctx.error.name == "AbortError" ? (ctx.message = `请求超时：${ctx.timeout}`) : (ctx.message = ctx.error.message);
@@ -105,11 +87,8 @@ export const ERRORS: Middleware<ErrorContext>[] = [
 		if (ctx.error) throw ctx;
 	},
 ];
-/**
- * 最终处理中间件函数数组
- * @type {Middleware<FinalContext>[]}
- */
-export const FINALS: Middleware<FinalContext>[] = [
+
+export const FINALS: Middleware<Context>[] = [
 	async (ctx, next) => {
 		await next();
 		if (!ctx.log) return;
@@ -117,7 +96,6 @@ export const FINALS: Middleware<FinalContext>[] = [
 		const Params = Object.setPrototypeOf({}, new function params() {}());
 		const Result = Object.setPrototypeOf({}, new function result() {}());
 		const Context = Object.setPrototypeOf({}, new function context() {}());
-		// @ts-expect-error pass
 		merge(Params, is("Object")(ctx.body) ? ctx.body : { body: ctx.body });
 		merge(Result, is("Object")(ctx.data) ? ctx.data : { data: ctx.data });
 		merge(Context, ctx);

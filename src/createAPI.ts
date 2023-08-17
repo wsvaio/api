@@ -1,31 +1,21 @@
-import type { ConfigContext, Context, CreateAPIResult, MiddlewareContext } from "./types.d";
+import type { BasicContext, Context } from "./types.d";
 import { createContext, mergeContext } from "./context";
-import { wrapper } from "./request";
+import { run } from "./request";
 
-/**
- * 创建 API。
- * @param {ConfigContext} config - API 配置。
- * @returns {CreateAPIResult} - API 结果。
- * @template C - API 配置的类型。
- */
-export const createAPI = <C extends object = {}>(config = {} as ConfigContext & C): CreateAPIResult<C> => {
-	const context = mergeContext(createContext(), config) as Context<C>;
+export const createAPI = <C extends Record<any, any>>(
+	config = {} as Context<{
+		C: C;
+	}>
+) => {
+	const context = mergeContext(createContext(), config);
 	return {
-		get: wrapper<C>(context)("get"),
-		post: wrapper<C>(context)("post"),
-		put: wrapper<C>(context)("put"),
-		patch: wrapper<C>(context)("patch"),
-		del: wrapper<C>(context)("delete"),
-		head: wrapper<C>(context)("head"),
-		connect: wrapper<C>(context)("connect"),
-		trace: wrapper<C>(context)("trace"),
-		options: wrapper<C>(context)("options"),
-		request: wrapper<C>(context)(),
-		extendAPI: <Custom extends object = {}>(config1 = {} as ConfigContext & Partial<C> & Custom) =>
+		get: <T extends Record<any, any>>(ctx: Context<{ B: T["b"]; Q: T["q"]; P: T["p"] }> & T) =>
+			run(mergeContext(context, { method: "get", ...ctx })),
+		extendAPI: <_C extends Record<any, any>>(config1 = {} as Context<{ C: _C & C }>) =>
 			createAPI(mergeContext(mergeContext(createContext(), context), config1)),
 		use:
 			<K extends "before" | "after" | "error" | "final">(key: K) =>
-				(...args: MiddlewareContext<C>[`${K}s`]) =>
+				(...args: BasicContext<{ C: C }>[`${K}s`]) =>
 					context[`${key}s`].push(...args),
 	};
 };
