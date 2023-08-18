@@ -1,89 +1,21 @@
 import type { Middleware } from "@wsvaio/utils";
 export type { Middleware };
 
-interface ResponseType<R = any> {
-	data: R;
+interface ResponseType<D> {
+	data: D;
 	status: Response["status"];
 	statusText: Response["statusText"];
 	ok: Response["ok"];
 	response: Response & { data: any };
 }
 
-// export type Params<
-// 	T extends {
-// 		B?: Record<any, any>;
-// 		Q?: Record<any, any>;
-// 		P?: Record<any, any>;
-// 	}
-// > = (
-// 	| {
-// 			body?: (Partial<T["B"]> & Record<any, any>) | BodyInit | null;
-// 			b: T["B"];
-// 	  }
-// 	| {
-// 			body: (Partial<T["B"]> & Record<any, any>) | BodyInit | null;
-// 			b?: T["B"];
-// 	  }
-// ) &
-// 	(
-// 		| {
-// 				query?: (Partial<T["Q"]> & Record<any, any>) | null;
-// 				q: T["Q"];
-// 		  }
-// 		| {
-// 				query: (Partial<T["Q"]> & Record<any, any>) | null;
-// 				q?: T["Q"];
-// 		  }
-// 	) &
-// 	(
-// 		| {
-// 				param?: (Partial<T["P"]> & Record<any, any>) | null;
-// 				p: T["P"];
-// 		  }
-// 		| {
-// 				param: (Partial<T["P"]> & Record<any, any>) | null;
-// 				p?: T["P"];
-// 		  }
-// 	);
-
-export type Params<
+interface RequestType<
 	T extends {
 		B?: Record<any, any>;
 		Q?: Record<any, any>;
 		P?: Record<any, any>;
 	}
-> = (
-	| {
-			body: Record<any, any>;
-	  }
-	| {
-			b: T["B"];
-	  }
-) &
-	(
-		| {
-				query: Record<any, any>;
-		  }
-		| {
-				q: T["Q"];
-		  }
-	) &
-	(
-		| {
-				param: Record<any, any>;
-		  }
-		| {
-				p: T["P"];
-		  }
-	);
-
-type RequestType<
-	T extends {
-		B?: Record<any, any>;
-		Q?: Record<any, any>;
-		P?: Record<any, any>;
-	}
-> = {
+> {
 	// fetch配置
 	cache?: RequestCache;
 	credentials?: RequestCredentials;
@@ -109,15 +41,15 @@ type RequestType<
 	b: T["B"] & Record<any, any>;
 	q: T["Q"] & Record<any, any>;
 	p: T["P"] & Record<any, any>;
-};
+}
 
 export type BasicContext<
 	T extends {
 		B?: Record<any, any>;
 		Q?: Record<any, any>;
 		P?: Record<any, any>;
+		D?: any;
 		C?: Record<any, any>;
-		R?: any;
 	}
 > = {
 	log: boolean;
@@ -137,8 +69,8 @@ export type BeforeContext<
 		B?: Record<any, any>;
 		Q?: Record<any, any>;
 		P?: Record<any, any>;
+		D?: any;
 		C?: Record<any, any>;
-		R?: any;
 	}
 > = BasicContext<T> & RequestType<T>;
 
@@ -147,43 +79,45 @@ export type AfterContext<
 		B?: Record<any, any>;
 		Q?: Record<any, any>;
 		P?: Record<any, any>;
+		D?: any;
 		C?: Record<any, any>;
-		R?: any;
 	}
-> = BasicContext<T> & RequestType<T> & ResponseType<T["R"]>;
+> = BasicContext<T> & RequestType<T> & ResponseType<T["D"]>;
 
 export type ErrorContext<
 	T extends {
 		B?: Record<any, any>;
 		Q?: Record<any, any>;
 		P?: Record<any, any>;
+		D?: any;
 		C?: Record<any, any>;
-		R?: any;
 	}
-> = BasicContext<T> & RequestType<T> & Partial<ResponseType<T["R"]>> & { error: Error };
+> = BasicContext<T> & RequestType<T> & Partial<ResponseType<T["D"]>> & { error: Error };
 
 export type FinalContext<
 	T extends {
 		B?: Record<any, any>;
 		Q?: Record<any, any>;
 		P?: Record<any, any>;
+		D?: any;
 		C?: Record<any, any>;
-		R?: any;
 	}
-> = BasicContext<T> & RequestType<T> & Partial<ResponseType<T["R"]>> & { error?: Error };
+> = BasicContext<T> & RequestType<T> & Partial<ResponseType<T["D"]>> & { error?: Error };
 
 export type Context<
 	T extends {
 		B?: Record<any, any>;
 		Q?: Record<any, any>;
 		P?: Record<any, any>;
+		D?: any;
 		C?: Record<any, any>;
-		R?: any;
 	} = {
 		B: Record<any, any>;
 		Q: Record<any, any>;
 		P: Record<any, any>;
+		D: any;
 		C: Record<any, any>;
-		R: any;
 	}
-> = Partial<BasicContext<T> & RequestType<T> & ResponseType<T["R"]> & { error: Error }>;
+> = Partial<BasicContext<T> & RequestType<T> & ResponseType<T["D"]> & { error: Error }>;
+
+

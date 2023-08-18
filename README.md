@@ -17,14 +17,13 @@
 - 🎏 支持合并上下文和配置，方便定制请求行为
 - 🤖 内置实用中间件，如 URL 拼接、返回结果检查等
 - 👾 支持日志输出，方便调试和查看请求情况
-- 🐲 提供柯里化配置，实现配置隔离和继承
+- 🐲 提供柯里化配置，优雅的封装接口
 - 🐋 支持超时中断请求
 - 🐳 易于使用，帮助快速处理各种网络请求
 
 ## API
 
 [document……](https://wsvaio.github.io/api/modules.html)
-
 
 ## 安装
 
@@ -205,41 +204,38 @@ api.use("final")(async ctx => {
 });
 ```
 
-## Typescirpt
-
-```typescript
-// 泛型支持
-type Params = { filed1: string };
-type Result = { code: number; data: any; msg: string };
-const result = await get<Params, Result>({ b: {}, q: {}, p: {} });
-// Params 可以为body query param提供类型提示
-// Result 可以设置result的类型
-```
-
 ## 柯里化配置
 
-只要传入 config = true，请求就不会调用，可继续柯里化配置
-
-配置项可以是一个字符串，该字符串会被赋值给 ctx.url，并且将 ctx.config 视为 true
-
-配置隔离，不会发生污染
+get、post 等方法是柯里化的，有两层，专门用于封装接口；request 可以直接调用发送请求；
 
 ```typescript
 // 创建配置
 import { createAPI } from "@wsvaio/api";
-export const { get } = createAPI();
+export const { get, request } = createAPI();
 // 柯里化配置
-const getTest1 = get({ url: "/test", config: true });
-const getTest2 = getTest2({ q: { p1: 1 }, config: true });
+const getTest1 = get({ url: "/test" });
+const getTest2 = get({ q: { p1: 1 } });
 const getTest3 = get("/test");
 // 发送请求
-getTest1({ q: { p1: 1 } });
-getTest2({ q: { p2: 2 } });
-getTest3();
-// or
-get({ q: {}, config: true })({ p: {}, config: true })({ b: {}, config: true })();
-// or
-get("/test/:id")({ p: { id: 1 } }); // get /test/1
+getTest1({ q: { p1: 1 } }).then(data => console.log(data));
+getTest2({ q: { p2: 2 } }).then(data => console.log(data));
+getTest3().then(data => console.log(data));
+// request 直接发送请求
+request({ url: "/test", q: { id: 1 } }).then(data => console.log(data));
+```
+
+## Typescirpt
+
+```typescript
+// 泛型支持
+const getUser = get<{
+	b: {}; // 配置body类型
+	q: {}; // 配置query类型
+	p: {}; // 配置param类型
+	d: {}; // 配置data返回结果
+}>("/user");
+// D 配置data返回结果（覆盖之前的）
+const result = await getUser<D>({ b: {}, q: {}, p: {} });
 ```
 
 ## 扩展 API 实例

@@ -2,21 +2,15 @@
 import { get } from "./api";
 
 const handleClick = () => {
-	get({ b: { a: 1, b: 2 } });
+	get({ b: { a: 1, b: 2 } })({
+
+		befores: [
+			async ctx => {
+				console.log("斤斤计较", ctx);
+			},
+		],
+	});
 };
-
-get<{
-	q: { a: number };
-}>({
-	q: { a: 123, b: 456 },
-	befores: [
-
-		async ctx => {
-
-		}
-
-	]
-});
 </script>
 
 <template>
