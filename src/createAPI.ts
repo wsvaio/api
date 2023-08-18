@@ -1,4 +1,4 @@
-import type { BasicContext, Context } from "./types.d";
+import type { Context } from "./types.d";
 import { createContext, mergeContext } from "./context";
 import type { WrapperResult } from "./request";
 import { wrapper } from "./request";
@@ -13,11 +13,9 @@ export interface CreateAPIResult<C extends Record<any, any>> {
 	connect: WrapperResult<C>;
 	trace: WrapperResult<C>;
 	options: WrapperResult<C>;
-	request: <D>(config2?: Context<{ C: C }>) => Promise<D>;
-	extendAPI: <T extends Record<any, any>>(config1?: Context<{ C: T & C }>) => CreateAPIResult<T & C>;
-	use: <K extends "error" | "before" | "after" | "final">(
-		key: K
-	) => (...args: BasicContext<{ C: C }>[`${K}s`]) => number;
+	request: <D>(config2?: Context<C>) => Promise<D>;
+	extendAPI: <T extends Record<any, any>>(config1?: Context<T & C>) => CreateAPIResult<T & C>;
+	use: <K extends "error" | "before" | "after" | "final">(key: K) => (...args: Context<C>[`${K}s`]) => number;
 }
 
 export const createAPI = <C extends Record<any, any>>(
@@ -37,11 +35,10 @@ export const createAPI = <C extends Record<any, any>>(
 		trace: wrapper<C>(context)("trace"),
 		options: wrapper<C>(context)("options"),
 		request: wrapper<C>(context)("get")({}),
-		extendAPI: <T extends Record<any, any>>(config = {} as Context<{ C: T & C }>) =>
-			createAPI(mergeContext(createContext(), context, config)),
+		extendAPI: config => createAPI(mergeContext(createContext(), context, config)),
 		use:
-			<T extends "before" | "after" | "error" | "final">(key: T) =>
-				(...args: BasicContext<{ C: C }>[`${T}s`]) =>
+			key =>
+				(...args) =>
 					context[`${key}s`].push(...args),
 	};
 };

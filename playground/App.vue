@@ -2,13 +2,8 @@
 import { get } from "./api";
 
 const handleClick = () => {
-	get({ b: { a: 1, b: 2 } })({
+	get<{ q: { a: number }; d: string }>({ b: { a: 1, b: 2 } })({ q: { a: 1 } }).then(data => {
 
-		befores: [
-			async ctx => {
-				console.log("斤斤计较", ctx);
-			},
-		],
 	});
 };
 </script>

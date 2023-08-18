@@ -11,12 +11,13 @@ export const { get, use, extendAPI, post, request } = createAPI<{
 	headers: {},
 });
 
-use("before")(async () => {
+use("before")(async ctx => {
 	console.log("before");
 });
 
-use("after")(async () => {
+use("after")(async ctx => {
 	console.log("after");
+	console.log(ctx.data);
 });
 
 use("error")(async () => {
@@ -24,15 +25,4 @@ use("error")(async () => {
 });
 use("final")(async () => {
 	console.log("final");
-});
-
-post<{ q: { id: number }; d: string }>({})({
-	q: { id: 1 },
-	befores: [
-		async ctx => {
-			console.log("啊？");
-		}
-	]
-}).then(data => {
-
 });
