@@ -1,7 +1,7 @@
 {
   "name": "@wsvaio/api",
   "type": "module",
-  "version": "1.1.0-1",
+  "version": "1.1.0-2",
   "description": "一个使用 TypeScript 编写，基于 fetch 的网络请求库，主要用于处理 HTTP 请求",
   "author": "wsvaio <wsvaio@qq.com>",
   "license": "MIT",
