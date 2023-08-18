@@ -1,7 +1,7 @@
 import type { Middleware } from "@wsvaio/utils";
 export type { Middleware };
 
-interface ResponseType<D> {
+export interface ResponseType<D> {
 	data: D;
 	status: Response["status"];
 	statusText: Response["statusText"];
@@ -9,7 +9,7 @@ interface ResponseType<D> {
 	response: Response & { data: any };
 }
 
-interface RequestType<
+export interface RequestType<
 	T extends {
 		B?: Record<any, any>;
 		Q?: Record<any, any>;

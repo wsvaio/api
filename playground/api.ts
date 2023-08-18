@@ -1,7 +1,7 @@
 import { createAPI } from "@wsvaio/api";
 
 // 创建api对象 泛型添加自定义属性
-export const { get, use, extendAPI, post } = createAPI<{
+export const { get, use, extendAPI, post, request } = createAPI<{
 	success?: string;
 	headers: Record<string, string>;
 }>({
