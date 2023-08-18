@@ -95,3 +95,55 @@ export type Context<
 	P = Record<any, any>,
 	D = any
 > = Partial<BasicContext<C, B, Q, P, D> & RequestType<B, Q, P> & ResponseType<D> & { error: Error }>;
+
+
+
+export type WrapperResult<C> = <
+	T extends {
+		b?: Record<any, any>;
+		q?: Record<any, any>;
+		p?: Record<any, any>;
+		d?: any;
+	} = {
+		b?: Record<any, any>;
+		q?: Record<any, any>;
+		p?: Record<any, any>;
+		d: any;
+	}
+>(
+	config1:
+	| (Context<
+	C,
+	T["b"] extends unknown ? Record<any, any> : T["b"],
+	T["q"] extends unknown ? Record<any, any> : T["q"],
+	T["p"] extends unknown ? Record<any, any> : T["p"],
+	T["d"] extends unknown ? any : T["d"]
+		  > &
+	Partial<Omit<T, "d">>)
+	| string
+) => <D = T["d"]>(
+	config2?: Context<
+	C,
+	T["b"] extends unknown ? Record<any, any> : T["b"],
+	T["q"] extends unknown ? Record<any, any> : T["q"],
+	T["p"] extends unknown ? Record<any, any> : T["p"],
+	D extends unknown ? any : D
+	> &
+	Omit<T, "d">
+) => Promise<D>;
+
+
+export interface CreateAPIResult<C extends Record<any, any>> {
+	get: WrapperResult<C>;
+	post: WrapperResult<C>;
+	put: WrapperResult<C>;
+	patch: WrapperResult<C>;
+	del: WrapperResult<C>;
+	head: WrapperResult<C>;
+	connect: WrapperResult<C>;
+	trace: WrapperResult<C>;
+	options: WrapperResult<C>;
+	request: <D>(config2?: Context<C>) => Promise<D>;
+	extendAPI: <T extends Record<any, any>>(config1?: Context<T & C>) => CreateAPIResult<T & C>;
+	use: <K extends "error" | "before" | "after" | "final">(key: K) => (...args: Context<C>[`${K}s`]) => number;
+}
