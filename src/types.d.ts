@@ -1,7 +1,7 @@
 import type { Middleware } from "@wsvaio/utils";
 export type { Middleware };
 
-export interface ResponseType<D> {
+export interface ResponseType<D = any> {
 	data: D;
 	status: Response["status"];
 	statusText: Response["statusText"];
@@ -143,7 +143,7 @@ export interface CreateAPIResult<C extends Record<any, any>> {
 	connect: WrapperResult<C>;
 	trace: WrapperResult<C>;
 	options: WrapperResult<C>;
-	request: <D>(config2?: Context<C>) => Promise<D>;
-	extendAPI: <T extends Record<any, any>>(config1?: Context<T & C>) => CreateAPIResult<T & C>;
+	request: <D>(config?: Context<C>) => Promise<D>;
+	extendAPI: <T extends Record<any, any>>(config?: Context<T & C>) => CreateAPIResult<T & C>;
 	use: <K extends "error" | "before" | "after" | "final">(key: K) => (...args: Context<C>[`${K}s`]) => number;
 }

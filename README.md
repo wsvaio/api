@@ -105,12 +105,11 @@ use("final")(async ctx =>
 // 简单定义
 export const getUser = get("/user/:id");
 export const addUser = post("/user");
-// 略复杂的定义 需要设置config=true
+// 或者传入一个对象
 export const editUser = put({
 	url: "/user/:id",
 	p: { id: 1 }, // 自带参数 p为param的简写
 	b: { username: "oiavsw" },
-	config: true, // 若config=false，将会直接发送请求
 });
 ```
 
