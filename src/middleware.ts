@@ -83,8 +83,11 @@ export const ERRORS: Middleware<Context>[] = [
 	async (ctx, next) => {
 		// AbortError AbortController触发 请求超时
 		ctx.error.name == "AbortError" ? (ctx.message = `请求超时：${ctx.timeout}`) : (ctx.message = ctx.error.message);
+		// 如果报错则设为不正常
+		ctx.normal = false;
 		await next();
-		if (ctx.error) throw ctx;
+		// 如果错误中间件处理完后依然不正常，则自动抛出异常
+		if (!ctx.normal) throw ctx;
 	},
 ];
 
@@ -113,4 +116,5 @@ export const FINALS: Middleware<Context>[] = [
 		console.log(Context);
 		console.groupEnd();
 	},
+
 ];

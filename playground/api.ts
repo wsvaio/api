@@ -26,3 +26,9 @@ use("error")(async () => {
 use("final")(async () => {
 	console.log("final");
 });
+
+get<{ b?: { a?: number }; q?: { a?: number } }>({
+	afters: [async ctx => {}],
+})().then(data => {
+	console.log(data);
+});

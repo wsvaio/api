@@ -3,6 +3,9 @@ import type { Context, WrapperResult } from "./types.d";
 import { AFTERS, BEFORES, ERRORS, FINALS, MIDDLE } from "./middleware";
 import { createContext, mergeContext } from "./context";
 
+/**
+ * 执行ctx
+ */
 export const run = <T extends Context>(ctx: T) =>
 	compose<T>(
 		...ctx.befores,
@@ -13,9 +16,10 @@ export const run = <T extends Context>(ctx: T) =>
 		.catch(error => compose(...ERRORS, ...ctx.errors)(merge(ctx, { error })))
 		.finally(() => compose(...FINALS, ...ctx.finals)(ctx));
 
-// export type WrapperResult<C> = <B = Record<any, any>, Q = Record<any, any>, P = Record<any, any>, D = any>(
-// 	config1: Context<C, B, Q, P, D> | string
-// ) => <_D = D>(config2?: Context<C, B, Q, P, _D>) => Promise<_D>;
+/**
+ * 使ctx正常化（不自动抛出error）
+ */
+export const normalize = <T extends Context>(ctx: T) => ctx.normal = true;
 
 export const wrapper
 	= <C>(context: Context) =>

@@ -33,6 +33,8 @@ export const createContext = (): Context => ({
 	body: null,
 	param: null,
 
+	normal: true,
+
 	befores: [],
 	afters: [],
 	errors: [],

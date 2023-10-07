@@ -3,7 +3,7 @@ import { get } from "./api";
 
 const handleClick = () => {
 	get<{ q: { a: number }; d: string }>({ b: { a: 1, b: 2 } })({ q: { a: 1 } }).then(data => {
-
+		console.log(data);
 	});
 };
 </script>

@@ -1,4 +1,4 @@
-import type { Middleware } from "@wsvaio/utils";
+import type { DeepPartial, Middleware, IsEqual, IsOptional } from "@wsvaio/utils";
 export type { Middleware };
 
 export interface ResponseType<D = any> {
@@ -22,6 +22,9 @@ export interface RequestType<B = Record<any, any>, Q = Record<any, any>, P = Rec
 	signal?: AbortSignal | null;
 	window?: null;
 	// 以上为fetch配置
+
+	// 是否正常
+	normal: boolean;
 
 	method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "connect" | "trace";
 	headers: Record<any, any>;
@@ -96,8 +99,6 @@ export type Context<
 	D = any
 > = Partial<BasicContext<C, B, Q, P, D> & RequestType<B, Q, P> & ResponseType<D> & { error: Error }>;
 
-
-
 export type WrapperResult<C> = <
 	T extends {
 		b?: Record<any, any>;
@@ -109,29 +110,16 @@ export type WrapperResult<C> = <
 		q?: Record<any, any>;
 		p?: Record<any, any>;
 		d: any;
-	}
+	},
+	B = IsEqual<T["b"], unknown> extends true ? Record<any, any> : T["b"],
+	Q = IsEqual<T["q"], unknown> extends true ? Record<any, any> : T["q"],
+	P = IsEqual<T["p"], unknown> extends true ? Record<any, any> : T["p"],
+	D = IsEqual<T["d"], unknown> extends true ? any : T["d"]
 >(
-	config1:
-	| (Context<
-	C,
-	T["b"] extends unknown ? Record<any, any> : T["b"],
-	T["q"] extends unknown ? Record<any, any> : T["q"],
-	T["p"] extends unknown ? Record<any, any> : T["p"],
-	T["d"] extends unknown ? any : T["d"]
-		  > &
-	Partial<Omit<T, "d">>)
-	| string
-) => <D = T["d"]>(
-	config2?: Context<
-	C,
-	T["b"] extends unknown ? Record<any, any> : T["b"],
-	T["q"] extends unknown ? Record<any, any> : T["q"],
-	T["p"] extends unknown ? Record<any, any> : T["p"],
-	D extends unknown ? any : D
-	> &
-	Omit<T, "d">
-) => Promise<D>;
-
+	config1: (Context<C, B, Q, P, D> & DeepPartial<Omit<T, "d">>) | string
+) => IsOptional<Omit<T, "d">, keyof Omit<T, "d">> extends true
+	? <Data = D>(config2?: Context<C, B, Q, P, Data> & Omit<T, "d">) => Promise<Data>
+	: <Data = D>(config2: Context<C, B, Q, P, Data> & Omit<T, "d">) => Promise<Data>;
 
 export interface CreateAPIResult<C extends Record<any, any>> {
 	get: WrapperResult<C>;
