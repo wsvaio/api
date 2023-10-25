@@ -23,9 +23,6 @@ export interface RequestType<B = Record<any, any>, Q = Record<any, any>, P = Rec
 	window?: null;
 	// 以上为fetch配置
 
-	// 是否正常
-	normal: boolean;
-
 	method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "connect" | "trace";
 	headers: Record<any, any>;
 	url: string;
@@ -51,6 +48,10 @@ export type BasicContext<
 	timeout: number;
 	message: string;
 
+	// 是否正常，用于normailze方法
+	normal: boolean;
+
+	// response解析方式
 	dataType?: "arrayBuffer" | "blob" | "formData" | "json" | "text";
 
 	befores: Middleware<BeforeContext<C, B, Q, P, D>>[];
