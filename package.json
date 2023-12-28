@@ -51,7 +51,7 @@
     "prepare": "simple-git-hooks"
   },
   "dependencies": {
-    "@wsvaio/utils": "^1.0.18"
+    "@wsvaio/utils": "^1.0.22"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.6.5",
