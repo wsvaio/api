@@ -1,44 +1,42 @@
 import { merge, omit } from "@wsvaio/utils";
-import type { Context } from "./types.d";
+import type { BeforeContext } from "./types.d";
 
-export const mergeContext = (context: Context, ...contexts: Context[]) => {
-	const keys = ["befores", "afters", "errors", "finals"] as const;
-	keys.forEach(key => {
-		!Array.isArray(context[key]) && (context[key] = []);
-		contexts
-			.filter(item => !!item)
-			.forEach(item => {
-				Array.isArray(item[key]) && context[key].push(...item[key]);
-				merge(context, omit(item, [...keys]), {
-					deep: Number.POSITIVE_INFINITY,
-				});
-			});
-	});
-	return context;
-};
+export function mergeContext(context: Record<any, any>, ...contexts: Record<any, any>[]) {
+  const keys = ["befores", "afters", "errors", "finals"] as const;
+  keys.forEach(key => {
+    !Array.isArray(context[key]) && (context[key] = []);
+    contexts
+      .filter(item => !!item)
+      .forEach(item => {
+        Array.isArray(item[key]) && context[key].push(...item[key]);
+        merge(context, omit(item, [...keys]), {
+          deep: Number.POSITIVE_INFINITY,
+        });
+      });
+  });
+  return context;
+}
 
-export const createContext = (): Context => ({
-	method: "get",
-	headers: {},
-	log: false,
-	timeout: 0,
-	url: "/",
-	baseURL: "",
+export function createContext(): BeforeContext {
+  return {
+    method: "get",
+    headers: {},
+    log: false,
 
-	b: {},
-	q: {},
-	p: {},
+    baseURL: "",
+    url: "/",
 
-	query: null,
-	body: null,
-	param: null,
+    requester: {} as any,
 
-	normal: true,
+    query: {},
+    body: null,
+    param: {},
 
-	befores: [],
-	afters: [],
-	errors: [],
-	finals: [],
+    startTime: new Date(),
 
-	message: "",
-});
+    befores: [],
+    afters: [],
+    errors: [],
+    finals: [],
+  };
+}
