@@ -2,11 +2,11 @@ export function getFullPath<
   T extends {
     query?: Record<any, any>;
     param?: Record<any, any>;
-    url: string;
+    path: string;
     body?: Record<any, any> | BodyInit | null;
   },
->({ query = {}, param = {}, url, body = {} }: T) {
-  let fullPath = url;
+>({ query = {}, param = {}, path, body = {} }: T) {
+  let fullPath = path;
 
   fullPath.match(/:[\w_][\w\d_]*\??/gims)?.forEach(matched => {
     const key = matched.slice(1, matched.length - (matched.endsWith("?") ? 1 : 0));

@@ -1,5 +1,3 @@
-import { createAPI, nativeFetchRequester } from "@wsvaio/api";
-
 // 创建api对象 泛型添加自定义属性
 // export const { get, use, extendAPI, post, request } = createAPI<{
 // 	success?: string;
@@ -10,6 +8,8 @@ import { createAPI, nativeFetchRequester } from "@wsvaio/api";
 // 	timeout: 0,
 // 	headers: {},
 // });
+
+import { createAPI, nativeFetchRequester } from "@wsvaio/api";
 
 // use("before")(async ctx => {
 // 	console.log("before");
@@ -33,4 +33,21 @@ import { createAPI, nativeFetchRequester } from "@wsvaio/api";
 // 	console.log(data);
 // });
 
-export const api = createAPI(nativeFetchRequester);
+export const api = createAPI({
+  requester: nativeFetchRequester,
+  timeout: 0,
+  dataType: "json",
+  a: 6,
+});
+// api.
+
+// const ctx = createContext({
+//   requester: nativeFetchRequester,
+//   // a: 1,
+//   // ''
+//   a: 1,
+// });
+
+// ctx.requester().then(data => data.)
+// ctx.aA extends AfterC
+// ctx.requester().then(data => data);

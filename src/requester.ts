@@ -1,14 +1,14 @@
 import { is, pick, trying } from "@wsvaio/utils";
 import type { AfterC, CoreContext, Requester } from "./types";
 
-export function defineRequester<B extends Record<any, any>, A extends AfterC | Promise<AfterC>>(
+export function defineRequester<B extends Record<any, any>, A extends AfterC>(
   requester: typeof Requester<B, A>
 ) {
   return requester;
 }
 
 export const nativeFetchRequester = defineRequester(
-  async (ctx: CoreContext<{ timeout: number; dataType: string } & RequestInit>) => {
+  async (ctx: CoreContext<{ timeout?: number; dataType?: string } & RequestInit>) => {
     if (ctx.timeout) {
       const controller = new AbortController();
       ctx.signal = controller.signal;
@@ -23,7 +23,7 @@ export const nativeFetchRequester = defineRequester(
       }).catch(() => {});
     }
 
-    const response = await fetch(ctx.baseURL + ctx.fullPath, {
+    const response = await fetch(ctx.url, {
       body,
       ...pick(ctx, [
         "cache",

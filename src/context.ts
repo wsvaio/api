@@ -1,7 +1,7 @@
 import { merge, omit } from "@wsvaio/utils";
-import type { BeforeContext } from "./types.d";
+import type { AfterC, BasicContext, BeforeContext, Requester } from "./types.d";
 
-export function mergeContext(context: Record<any, any>, ...contexts: Record<any, any>[]) {
+export function mergeContext(context: any, ...contexts: any[]) {
   const keys = ["befores", "afters", "errors", "finals"] as const;
   keys.forEach(key => {
     !Array.isArray(context[key]) && (context[key] = []);
@@ -17,26 +17,29 @@ export function mergeContext(context: Record<any, any>, ...contexts: Record<any,
   return context;
 }
 
-export function createContext(): BeforeContext {
-  return {
-    method: "get",
-    headers: {},
-    log: false,
+export function createContext<T extends Record<any, any>, B extends Record<any, any>, A extends AfterC>(
+  initial: Partial<Omit<BasicContext<B, A>, "requester">> & { requester: typeof Requester<B, A> } & T
+) {
+  return mergeContext(
+    {
+      method: "get",
+      headers: {},
+      log: false,
 
-    baseURL: "",
-    url: "/",
+      path: "/",
+      origin: "",
 
-    requester: {} as any,
+      query: {},
+      body: null,
+      param: {},
 
-    query: {},
-    body: null,
-    param: {},
+      startTime: new Date(),
 
-    startTime: new Date(),
-
-    befores: [],
-    afters: [],
-    errors: [],
-    finals: [],
-  };
+      befores: [],
+      afters: [],
+      errors: [],
+      finals: [],
+    },
+    initial
+  ) as BeforeContext<B & T, A>;
 }

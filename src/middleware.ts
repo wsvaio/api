@@ -7,6 +7,7 @@ export const BEFORES: Middleware<BeforeContext>[] = [
   async (ctx, next) => {
     await next();
     ctx.fullPath = getFullPath(ctx);
+    ctx.url = ctx.origin + ctx.fullPath;
   },
 ];
 

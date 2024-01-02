@@ -5,8 +5,8 @@ export type { Middleware };
 type IgnoreKeys =
   | "method"
   | "headers"
-  | "url"
-  | "baseURL"
+  | "path"
+  | "origin"
   | "body"
   | "query"
   | "param"
@@ -16,13 +16,16 @@ type IgnoreKeys =
   | "errors"
   | "finals";
 
-export function Requester<B extends Record<any, any>, A extends AfterC | Promise<AfterC>>(ctx: CoreContext<B>): A;
+export function Requester<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC>(
+  ctx: CoreContext<B, A>
+): Promise<A>;
 
-export type BasicContext<T extends Record<any, any> = Record<any, any>> = {
+export type BasicContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = {
   method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "connect" | "trace";
   headers: Record<any, any>;
-  url: string;
-  baseURL: string;
+
+  origin: string;
+  path: string;
 
   body: Record<any, any> | BodyInit | null;
   query: Record<any, any>;
@@ -35,15 +38,16 @@ export type BasicContext<T extends Record<any, any> = Record<any, any>> = {
   // response解析方式
   dataType?: "arrayBuffer" | "blob" | "formData" | "json" | "text";
 
-  befores: Middleware<BasicContext<T>>[];
-  requester: typeof Requester;
-  afters: Middleware<AfterContext<T>>[];
-  errors: Middleware<ErrorContext<T>>[];
-  finals: Middleware<FinalContext<T>>[];
-} & Omit<T, IgnoreKeys>;
+  befores: Middleware<BasicContext<B, A>>[];
+  requester: typeof Requester<B, A>;
+  afters: Middleware<AfterContext<B, A>>[];
+  errors: Middleware<ErrorContext<B, A>>[];
+  finals: Middleware<FinalContext<B, A>>[];
+} & Omit<B, IgnoreKeys>;
 
 export interface BeforeC {
   fullPath: string;
+  url: string;
 }
 export interface AfterC {
   // ok: boolean;
@@ -60,15 +64,33 @@ export interface FinalC {
   endTime: Date;
 }
 
-export type BeforeContext<T extends Record<any, any> = Record<any, any>> = BasicContext<T>;
+export type BeforeContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = BasicContext<
+  B,
+  A
+>;
 
-export type CoreContext<T extends Record<any, any> = Record<any, any>> = BasicContext<T> & BeforeC;
+export type CoreContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = BasicContext<B, A> &
+  BeforeC;
 
-export type AfterContext<T extends Record<any, any> = Record<any, any>> = BasicContext<T> & BeforeC & AfterC;
+export type AfterContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = BasicContext<
+  B,
+  A
+> &
+BeforeC &
+AfterC;
 
-export type ErrorContext<T extends Record<any, any> = Record<any, any>> = BasicContext<T> & BeforeC & AfterC & ErrorC;
+export type ErrorContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = BasicContext<
+  B,
+  A
+> &
+BeforeC &
+AfterC &
+ErrorC;
 
-export type FinalContext<T extends Record<any, any> = Record<any, any>> = BasicContext<T> &
-  BeforeC &
-  Partial<AfterC & ErrorC> &
-  FinalC;
+export type FinalContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = BasicContext<
+  B,
+  A
+> &
+BeforeC &
+Partial<AfterC & ErrorC> &
+FinalC;
