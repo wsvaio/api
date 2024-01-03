@@ -1,7 +1,7 @@
 import { is, pick, trying } from "@wsvaio/utils";
-import type { AfterC, CoreContext, Requester } from "./types";
+import type { AfterPatch, BeforePatch, CoreContext, Requester } from "./types";
 
-export function defineRequester<B extends Record<any, any>, A extends AfterC>(
+export function defineRequester<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch>(
   requester: typeof Requester<B, A>
 ) {
   return requester;

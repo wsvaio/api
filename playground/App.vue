@@ -26,11 +26,12 @@ async function handleClick() {
   //   // data.data
   // });
 
-  const res = await exec(ctx).then(data => data);
-  // res.
+  const res = await exec(ctx);
+
+  //
   console.log("sdf");
 
-  const a = currying(ctx)("123")({ config: true })({});
+  const a = currying(ctx)("123")({ config: true })();
 }
 </script>
 

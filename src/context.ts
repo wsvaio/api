@@ -1,5 +1,5 @@
 import { merge, omit } from "@wsvaio/utils";
-import type { AfterC, BasicContext, BeforeContext, Requester } from "./types.d";
+import type { AfterPatch, BasicContext, BeforeContext, BeforePatch, Requester } from "./types.d";
 
 export function mergeContext(context: any, ...contexts: any[]) {
   const keys = ["befores", "afters", "errors", "finals"] as const;
@@ -17,7 +17,7 @@ export function mergeContext(context: any, ...contexts: any[]) {
   return context;
 }
 
-export function createContext<T extends Record<any, any>, B extends Record<any, any>, A extends AfterC>(
+export function createContext<T extends Record<any, any>, B extends BeforePatch, A extends AfterPatch>(
   initial: Partial<Omit<BasicContext<B, A>, "requester">> & { requester: typeof Requester<B, A> } & T
 ) {
   return mergeContext(

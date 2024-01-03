@@ -39,7 +39,10 @@ export const api = createAPI({
   dataType: "json",
   a: 6,
 });
-// api.
+
+api.request({ method: "connect" });
+// api{}.
+api.post({ method: "connect", config: true, })({ });
 
 // const ctx = createContext({
 //   requester: nativeFetchRequester,

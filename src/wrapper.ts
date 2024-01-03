@@ -1,16 +1,18 @@
 import { omit } from "@wsvaio/utils";
 import { mergeContext } from "./context";
-import type { AfterC, BeforeContext, FinalContext, Requester } from "./types";
+import type { AfterPatch, BeforeContext, BeforePatch, FinalContext } from "./types";
 import { exec } from "./executer";
 
+export function request<B extends BeforePatch, A extends AfterPatch>(context: BeforeContext<B, A>) {
+  return (config?: Partial<BeforeContext<B, A>>) => {
+    return exec(mergeContext({}, context, config));
+  };
+}
+
 /**
- * 生成柯里化函数
- * @param context - 上下文对象，包含请求相关信息和中间件函数
- * @returns 柯里化函数
+ * 无限递归柯里化包装请求器
  */
-export function currying<B extends Record<any, any>, A extends AfterC>(
-  context: Partial<BeforeContext<B, A>> & { requester: typeof Requester<B, A> }
-) {
+export function currying<B extends BeforePatch, A extends AfterPatch>(context: BeforeContext<B, A>) {
   function result(config: (Partial<BeforeContext<B, A>> & { config: true }) | string): typeof result;
   function result(config?: Partial<BeforeContext<B, A>> & { config?: false }): Promise<FinalContext<B, A>>;
   function result(config: (Partial<BeforeContext<B, A>> & { config?: boolean }) | string = {}) {
@@ -23,7 +25,7 @@ export function currying<B extends Record<any, any>, A extends AfterC>(
       mergeContext(ctx, omit(config, ["config"]));
       if (config.config === true)
         return currying<B, A>(ctx);
-      else return exec(ctx) as Promise<FinalContext<B, A>>;
+      else return exec(ctx);
     }
   }
 

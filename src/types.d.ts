@@ -2,25 +2,11 @@ import type { Middleware } from "@wsvaio/utils";
 
 export type { Middleware };
 
-type IgnoreKeys =
-  | "method"
-  | "headers"
-  | "path"
-  | "origin"
-  | "body"
-  | "query"
-  | "param"
-  | "log"
-  | "befores"
-  | "afters"
-  | "errors"
-  | "finals";
-
-export function Requester<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC>(
-  ctx: CoreContext<B, A>
+export function Requester<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch>(
+  ctx: CoreContext<B>
 ): Promise<A>;
 
-export type BasicContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = {
+export type BasicContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = {
   method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "connect" | "trace";
   headers: Record<any, any>;
 
@@ -43,54 +29,44 @@ export type BasicContext<B extends Record<any, any> = Record<any, any>, A extend
   afters: Middleware<AfterContext<B, A>>[];
   errors: Middleware<ErrorContext<B, A>>[];
   finals: Middleware<FinalContext<B, A>>[];
-} & Omit<B, IgnoreKeys>;
 
-export interface BeforeC {
+  [k: string]: any;
+} & B;
+
+export interface BeforePatch {}
+export interface CorePatch {
   fullPath: string;
   url: string;
 }
-export interface AfterC {
-  // ok: boolean;
+export interface AfterPatch {
   status: number;
   message: string;
   data: any;
 }
-export interface ErrorC {
+export interface ErrorPatch {
   error: Error;
 }
 
-export interface FinalC {
+export interface FinalPatch {
   duration: number;
   endTime: Date;
 }
 
-export type BeforeContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = BasicContext<
-  B,
-  A
->;
+export type BeforeContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = BasicContext<B, A>;
 
-export type CoreContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = BasicContext<B, A> &
-  BeforeC;
+export type CoreContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = BasicContext<B, A> &
+  CorePatch;
 
-export type AfterContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = BasicContext<
-  B,
-  A
-> &
-BeforeC &
-AfterC;
+export type AfterContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = BasicContext<B, A> &
+  CorePatch &
+  A;
 
-export type ErrorContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = BasicContext<
-  B,
-  A
-> &
-BeforeC &
-AfterC &
-ErrorC;
+export type ErrorContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = BasicContext<B, A> &
+  CorePatch &
+  Partial<A> &
+  ErrorPatch;
 
-export type FinalContext<B extends Record<any, any> = Record<any, any>, A extends AfterC = AfterC> = BasicContext<
-  B,
-  A
-> &
-BeforeC &
-Partial<AfterC & ErrorC> &
-FinalC;
+export type FinalContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = BasicContext<B, A> &
+  CorePatch &
+  Partial<A & ErrorPatch> &
+  FinalPatch;
