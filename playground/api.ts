@@ -1,34 +1,19 @@
-import { createAPI } from "@wsvaio/api";
+import { createNativeFetchAPI } from "@wsvaio/api";
 
-// 创建api对象 泛型添加自定义属性
-export const { get, use, extendAPI, post, request } = createAPI<{
-	success?: string;
-	headers: Record<string, string>;
-}>({
-	baseURL: "/api",
-	log: true, // 控制台是否打印日志
-	timeout: 0,
-	headers: {},
+export const { get, use } = createNativeFetchAPI({
+  origin: "http://localhost:5173/",
+  log: true,
+  cus: 123,
+});
+
+export const getTest1 = get({ path: "/test1", config: true, method: "post" });
+export const getTest2 = get<{ query: { q1: number } }>("/test1/:id?")({
+  config: true,
+  query: { q1: 1, q2: "q2" },
+  param: { id: 123 },
+  returnType: "context"
 });
 
 use("before")(async ctx => {
-	console.log("before");
-});
-
-use("after")(async ctx => {
-	console.log("after");
-	console.log(ctx.data);
-});
-
-use("error")(async () => {
-	console.log("error");
-});
-use("final")(async () => {
-	console.log("final");
-});
-
-get<{ b?: { a?: number }; q?: { a?: number } }>({
-	afters: [async ctx => {}],
-})().then(data => {
-	console.log(data);
+  console.log(ctx, "before");
 });

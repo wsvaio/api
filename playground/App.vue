@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { get } from "./api";
+import { getTest1, getTest2 } from "./api";
 
-const handleClick = () => {
-	get<{ q: { a: number }; d: string }>({ b: { a: 1, b: 2 } })({ q: { a: 1 } }).then(data => {
-		console.log(data);
-	});
-};
+async function handleClick() {
+  getTest1();
+  getTest2();
+  console.log("wdf");
+}
 </script>
 
 <template>
-	<h1>Hello World !</h1>
-	<button @click="handleClick">123</button>
+  <h1>Hello World !</h1>
+  <button @click="handleClick">
+    123
+  </button>
 </template>

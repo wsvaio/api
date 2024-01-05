@@ -1,138 +1,97 @@
-import type { DeepPartial, Middleware, IsEqual, IsOptional } from "@wsvaio/utils";
+import type { Middleware } from "@wsvaio/utils";
+
 export type { Middleware };
 
-export interface ResponseType<D = any> {
-	data: D;
-	status: Response["status"];
-	statusText: Response["statusText"];
-	ok: Response["ok"];
-	response: Response & { data: any };
+// 保留字段
+// export type ReservedField =
+//   | "method"
+//   | "headers"
+//   | "origin"
+//   | "path"
+//   | "log"
+//   | "startTime"
+//   | "befores"
+//   | "requester"
+//   | "afters"
+//   | "errors"
+//   | "finals"
+//   | "fullPath"
+//   | "url"
+//   | "duration"
+//   | "status"
+//   | "data"
+//   | "message"
+//   | "error"
+//   | "endTime"
+//   | "body"
+//   | "query"
+//   | "param";
+
+export function Requester<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch>(
+  ctx: CoreContext<B>
+): Promise<A>;
+
+export type BasicContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = {
+  method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "connect" | "trace";
+  headers: Record<any, any>;
+
+  origin: string;
+  path: string;
+
+  body: Record<any, any> | BodyInit | null;
+  query: Record<any, any>;
+  param: Record<any, any>;
+
+  log: boolean;
+
+  startTime: Date;
+
+  befores: Middleware<BasicContext<B, A>>[];
+  requester: typeof Requester<B, A>;
+  afters: Middleware<AfterContext<B, A>>[];
+  errors: Middleware<ErrorContext<B, A>>[];
+  finals: Middleware<FinalContext<B, A>>[];
+} & B &
+Record<any, any>;
+
+export interface BeforePatch {}
+export interface CorePatch {
+  fullPath: string;
+  url: string;
+}
+export interface AfterPatch {
+  status: number;
+  message: string;
+  data: any;
+}
+export interface ErrorPatch {
+  error: Error;
 }
 
-export interface RequestType<B = Record<any, any>, Q = Record<any, any>, P = Record<any, any>> {
-	// fetch配置
-	cache?: RequestCache;
-	credentials?: RequestCredentials;
-	integrity?: string;
-	keepalive?: boolean;
-	mode?: RequestMode;
-	redirect?: RequestRedirect;
-	referrer?: string;
-	referrerPolicy?: ReferrerPolicy;
-	signal?: AbortSignal | null;
-	window?: null;
-	// 以上为fetch配置
-
-	method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "connect" | "trace";
-	headers: Record<any, any>;
-	url: string;
-	baseURL: string;
-
-	body: Record<any, any> | BodyInit | null;
-	query: Record<any, any> | null;
-	param: Record<any, any> | null;
-
-	b: B & Record<any, any>;
-	q: Q & Record<any, any>;
-	p: P & Record<any, any>;
+export interface FinalPatch {
+  duration: number;
+  endTime: Date;
 }
 
-export type BasicContext<
-	C = Record<any, any>,
-	B = Record<any, any>,
-	Q = Record<any, any>,
-	P = Record<any, any>,
-	D = any
-> = {
-	log: boolean;
-	timeout: number;
-	message: string;
+export type BeforeContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = BasicContext<B, A>;
 
-	// 是否正常，用于normailze方法
-	normal: boolean;
+export type CoreContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = BasicContext<B, A> &
+  CorePatch;
 
-	// response解析方式
-	dataType?: "arrayBuffer" | "blob" | "formData" | "json" | "text";
+export type AfterContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = BasicContext<B, A> &
+  CorePatch &
+  A;
 
-	befores: Middleware<BeforeContext<C, B, Q, P, D>>[];
-	afters: Middleware<AfterContext<C, B, Q, P, D>>[];
-	errors: Middleware<ErrorContext<C, B, Q, P, D>>[];
-	finals: Middleware<FinalContext<C, B, Q, P, D>>[];
-} & C;
+export type ErrorContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = BasicContext<B, A> &
+  CorePatch &
+  Partial<A> &
+  ErrorPatch;
 
-export type BeforeContext<
-	C = Record<any, any>,
-	B = Record<any, any>,
-	Q = Record<any, any>,
-	P = Record<any, any>,
-	D = any
-> = BasicContext<C, B, Q, P, D> & RequestType<B, Q, P>;
+export type FinalContext<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch> = BasicContext<B, A> &
+  CorePatch &
+  Partial<A & ErrorPatch> &
+  FinalPatch;
 
-export type AfterContext<
-	C = Record<any, any>,
-	B = Record<any, any>,
-	Q = Record<any, any>,
-	P = Record<any, any>,
-	D = any
-> = BasicContext<C, B, Q, P, D> & RequestType<B, Q, P> & ResponseType<D>;
+export type InferRequesterB<T> = T extends typeof Requester<infer B extends Record<any, any>> ? B : never;
 
-export type ErrorContext<
-	C = Record<any, any>,
-	B = Record<any, any>,
-	Q = Record<any, any>,
-	P = Record<any, any>,
-	D = any
-> = BasicContext<C, B, Q, P, D> & RequestType<B, Q, P> & Partial<ResponseType<D>> & { error: Error };
-
-export type FinalContext<
-	C = Record<any, any>,
-	B = Record<any, any>,
-	Q = Record<any, any>,
-	P = Record<any, any>,
-	D = any
-> = BasicContext<C, B, Q, P, D> & RequestType<B, Q, P> & Partial<ResponseType<D>> & { error?: Error };
-
-export type Context<
-	C = Record<any, any>,
-	B = Record<any, any>,
-	Q = Record<any, any>,
-	P = Record<any, any>,
-	D = any
-> = Partial<BasicContext<C, B, Q, P, D> & RequestType<B, Q, P> & ResponseType<D> & { error: Error }>;
-
-export type WrapperResult<C> = <
-	T extends {
-		b?: Record<any, any>;
-		q?: Record<any, any>;
-		p?: Record<any, any>;
-		d?: any;
-	} = {
-		b?: Record<any, any>;
-		q?: Record<any, any>;
-		p?: Record<any, any>;
-		d: any;
-	},
-	B = IsEqual<T["b"], unknown> extends true ? Record<any, any> : T["b"],
-	Q = IsEqual<T["q"], unknown> extends true ? Record<any, any> : T["q"],
-	P = IsEqual<T["p"], unknown> extends true ? Record<any, any> : T["p"],
-	D = IsEqual<T["d"], unknown> extends true ? any : T["d"]
->(
-	config1: (Context<C, B, Q, P, D> & DeepPartial<Omit<T, "d">>) | string
-) => IsOptional<Omit<T, "d">, keyof Omit<T, "d">> extends true
-	? <Data = D>(config2?: Context<C, B, Q, P, Data> & Omit<T, "d">) => Promise<Data>
-	: <Data = D>(config2: Context<C, B, Q, P, Data> & Omit<T, "d">) => Promise<Data>;
-
-export interface CreateAPIResult<C extends Record<any, any>> {
-	get: WrapperResult<C>;
-	post: WrapperResult<C>;
-	put: WrapperResult<C>;
-	patch: WrapperResult<C>;
-	del: WrapperResult<C>;
-	head: WrapperResult<C>;
-	connect: WrapperResult<C>;
-	trace: WrapperResult<C>;
-	options: WrapperResult<C>;
-	request: <D>(config?: Context<C>) => Promise<D>;
-	extendAPI: <T extends Record<any, any>>(config?: Context<T & C>) => CreateAPIResult<T & C>;
-	use: <K extends "error" | "before" | "after" | "final">(key: K) => (...args: Context<C>[`${K}s`]) => number;
-}
+export type isPartial<T> = Partial<T> extends T ? true : false;

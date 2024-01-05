@@ -2,7 +2,7 @@
 
 # @wsvaio/api
 
-一个使用 TypeScript 编写，**通用**的网络请求库，主要用于处理 HTTP 请求
+一个使用 TypeScript 编写，基于 fetch 的网络请求库，主要用于处理 HTTP 请求
 
 [![Size](https://img.shields.io/bundlephobia/minzip/@wsvaio/api/latest)](https://www.npmjs.com/package/@wsvaio/api) [![Version](https://img.shields.io/npm/v/@wsvaio/api)](https://www.npmjs.com/package/@wsvaio/api) [![Languages](https://img.shields.io/github/languages/top/wsvaio/api)](https://www.npmjs.com/package/@wsvaio/api) [![License](https://img.shields.io/npm/l/@wsvaio/api)](https://www.npmjs.com/package/@wsvaio/api) [![Star](https://img.shields.io/github/stars/wsvaio/api)](https://github.com/wsvaio/api) [![Download](https://img.shields.io/npm/dm/@wsvaio/api)](https://www.npmjs.com/package/@wsvaio/api)
 
@@ -10,45 +10,44 @@
 
 ## 特性
 
-- ✨ 通用的现代网络请求库，可以兼容多种环境
-- 🎉 使用 TypeScript 编写，完善的类型支持
+- ✨ 基于 fetch 的现代网络请求库
+- 🎉 使用 TypeScript 编写，提供类型支持
 - 🎨 支持请求中间件，方便扩展功能
 - 🎇 提供创建 API、设置全局上下文、执行请求等功能
 - 🎏 支持合并上下文和配置，方便定制请求行为
 - 🤖 内置实用中间件，如 URL 拼接、返回结果检查等
 - 👾 支持日志输出，方便调试和查看请求情况
 - 🐲 提供柯里化配置，优雅的封装接口
+- 🐋 支持超时中断请求
 - 🐳 易于使用，帮助快速处理各种网络请求
 
 ## API
 
 [document……](https://wsvaio.github.io/api/modules.html)
 
-## 快速使用
-
-### 安装
+## 安装
 
 ```
 npm install @wsvaio/api
 ```
 
-### 使用方法
+## 使用方法
 
 首先，需要引入请求库：
 
 ```
-import { createNativeFetchAPI } from "@wsvaio/api";
+import { createAPI } from '@wsvaio/api';
 ```
 
 接下来，可以创建一个 API 实例：
 
 ```javascript
 // 创建api实例并带有两个自定义属性
-export const { post, get, put, patch, del, request, use } = createNativeFetchAPI<{
+export const { post, get, put, patch, del, request, use, extendAPI } = createAPI<{
 	success?: string; // 请求成功时的消息
 	noticeable?: boolean; // 是否需要通知
 }>({
-	origin: "https://api.example.com",
+	baseURL: "https://api.example.com",
 
 	log: true,
 	noticeable: true,
@@ -68,15 +67,15 @@ use("before")(async () => Progress.start());
 
 // 设置请求token
 use("before")(async ctx => {
-  const auth = useAuthStore();
-  ctx.headers.Authorization = `Bearer ${auth.accessToken}`;
+	const auth = useAuthStore();
+	ctx.headers.Authorization = `Bearer ${auth.accessToken}`;
 });
 
 // after 请求发出后
 
 // 抛出错误
 use("after")(async ctx => {
-  if (ctx.data?.code != 200) throw new Error(ctx.message);
+	if (ctx.data?.code != 200) throw new Error(ctx.message);
 });
 // data扁平化
 use("after")(async ctx => (ctx.data = ctx.data.data));
@@ -85,8 +84,8 @@ use("after")(async ctx => (ctx.data = ctx.data.data));
 
 // 单独处理401
 use("error")(async ctx => {
-  if (ctx.data?.code != 401) return;
-  // handle...
+	if (ctx.data?.code != 401) return;
+	// handle...
 });
 
 // final 收尾
@@ -94,9 +93,9 @@ use("error")(async ctx => {
 use("final")(async ctx => Progress.done(!ctx.error));
 // 通过扩展自定义属性实现通知
 use("final")(async ctx =>
-  ctx.error && ctx.noticeable
-    ? ctx.message && ElNotification.error(ctx.message)
-    : ctx.success && ElNotification.success(ctx.success)
+	ctx.error && ctx.noticeable
+		? ctx.message && ElNotification.error(ctx.message)
+		: ctx.success && ElNotification.success(ctx.success)
 );
 ```
 
@@ -108,10 +107,9 @@ export const getUser = get("/user/:id");
 export const addUser = post("/user");
 // 或者传入一个对象
 export const editUser = put({
-  url: "/user/:id",
-  param: { id: 1 }, // param参数
-  body: { username: "oiavsw" },
-  config: true, // config=false 将会执行
+	url: "/user/:id",
+	p: { id: 1 }, // 自带参数 p为param的简写
+	b: { username: "oiavsw" },
 });
 ```
 
@@ -141,7 +139,7 @@ getUser({
 	// 请求成功时的通知
 	success: "获取成功"
 	// param参数
-	param: { id: 1 },
+	p: { id: 1 },
 }).then(data => {
 	// 响应
 	console.log(data);
@@ -149,7 +147,7 @@ getUser({
 
 addUser({
 	// body 参数
-	body: {
+	b: {
 		username: 'wsvaio'
 	}
 }).then(data => {
@@ -160,29 +158,13 @@ addUser({
 editUser();
 ```
 
-## 通用性
+## Query & Param & Body
 
-通过提供不同的requester，可兼容不同的平台
-
-内置：
-
-- nativeFetchRequester //原生fetch
-- uniappRequester // uniapp环境下的request，暂未实现
-- nuxtFetchRequester // nuxt环境下的$fetch，暂未实现
-
-例如要兼容uniapp，则可以使用uniappRequester
-
-```ts
-import { createAPI, uniappRequester } from "@wsvaio/api";
-
-export const { get } = createAPI(uniappRequester)({
-  origin: "http://localhost",
-  log: true
-});
-
-get({
-  q: { q1: 1 }
-});
+```typescript
+// 简写
+get({ q: {}, p: {}, b: {} });
+// 全写，优先级高，并且body支持更多类型
+get({ query: {}, param: {}, body: {} });
 ```
 
 ## 中间件
@@ -193,7 +175,7 @@ get({
 
 ```javascript
 api.use("before")(async ctx => {
-  console.log("请求前");
+	console.log("请求前");
 });
 ```
 
@@ -201,7 +183,7 @@ api.use("before")(async ctx => {
 
 ```javascript
 api.use("after")(async ctx => {
-  console.log("请求后");
+	console.log("请求后");
 });
 ```
 
@@ -209,7 +191,7 @@ api.use("after")(async ctx => {
 
 ```javascript
 api.use("error")(async ctx => {
-  console.log("错误处理");
+	console.log("错误处理");
 });
 ```
 
@@ -217,70 +199,57 @@ api.use("error")(async ctx => {
 
 ```javascript
 api.use("final")(async ctx => {
-  console.log("最终处理");
+	console.log("最终处理");
 });
 ```
 
 ## 柯里化配置
 
-get、post 等http方法是柯里化的，可以无限递归，专门用于封装接口。必须设置 { config: true } 才会递归下去，否则将会执行请求
+get、post 等方法是柯里化的，有两层，专门用于封装接口；request 可以直接调用发送请求；
 
 ```typescript
 // 创建配置
 import { createAPI } from "@wsvaio/api";
 export const { get, request } = createAPI();
 // 柯里化配置
-const getTest1 = get({ url: "/test", config: true });
-const getTest2 = get({ query: { q1: 1 }, config: true })({ param: { p1: 1 }, config: true })({
-  body: { b1: 1 },
-  config: true,
-});
-const getTest3 = get("/test"); // 相当于 { path: '/test', config: true }
+const getTest1 = get({ url: "/test" });
+const getTest2 = get({ q: { p1: 1 } });
+const getTest3 = get("/test");
 // 发送请求
 getTest1({ q: { p1: 1 } }).then(data => console.log(data));
 getTest2({ q: { p2: 2 } }).then(data => console.log(data));
 getTest3().then(data => console.log(data));
-```
-
-设置 { returnType: "context" } 将会返回context，默认返回context.data
-``` ts
-getTest1({ returnType: "context" }); // ctx
-getTest1({ returnType: "data" }); // ctx.data
+// request 直接发送请求
+request({ url: "/test", q: { id: 1 } }).then(data => console.log(data));
 ```
 
 ## Typescirpt
 
 ```typescript
-// 泛型支持，可无限递归配置，对当前无影响，对递归的下一级有影响，后续则都为可选
-// data 为特殊保留字段，不会作用，但会影响返回值的类型
+// 泛型支持
 const getUser = get<{
-  body: {}; // 配置body类型
-  query: {}; // 配置query类型
-  param: {}; // 配置param类型
-  data: {}; // 配置data返回结果
+	b: {}; // 配置body类型
+	q: {}; // 配置query类型
+	p: {}; // 配置param类型
+	d: {}; // 配置data返回结果
 }>("/user");
-// 支持递归
-getUser<{
-  body: {};
-}>({  });
+// D 配置data返回结果（覆盖之前的）
+const result = await getUser<D>({ b: {}, q: {}, p: {} });
 ```
 
-## 扩展、继承 API 实例
+## 扩展 API 实例
 
-将要继承的ctx作为参数传入，即可扩展一个新的 API 实例：
+使用 extendAPI() 方法扩展一个新的 API 实例：
 
 ```typescript
 // 创建配置
-import { createNativeFetchAPI } from "@wsvaio/api";
-export const { ctx } = createNativeFetchAPI({
-  baseURL: "/api",
+import { createAPI } from "@wsvaio/api";
+export const { extendAPI } = createAPI({
+	baseURL: "/api",
 });
 
-// 继承父级的配置
-const { get } = createNativeFetchAPI({
-  ...ctx,
-  other: {}
-});
+// 派生配置，继承父级的配置
+const { get } = extendAPI();
 
 // 发送请求
 get({ url: "/test" });
@@ -292,7 +261,17 @@ get({ url: "/test" });
 // 创建配置
 import { createAPI } from "@wsvaio/api";
 export const { get } = createAPI({
-  log: true, // 日志打印
+	log: true, // 日志打印
+});
+```
+
+## 超时中断请求
+
+```typescript
+// 创建配置
+import { createAPI } from "@wsvaio/api";
+export const { get } = createAPI({
+	timeout: 5000, // 超时中断请求
 });
 ```
 
