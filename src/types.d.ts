@@ -2,6 +2,31 @@ import type { Middleware } from "@wsvaio/utils";
 
 export type { Middleware };
 
+// 保留字段
+// export type ReservedField =
+//   | "method"
+//   | "headers"
+//   | "origin"
+//   | "path"
+//   | "log"
+//   | "startTime"
+//   | "befores"
+//   | "requester"
+//   | "afters"
+//   | "errors"
+//   | "finals"
+//   | "fullPath"
+//   | "url"
+//   | "duration"
+//   | "status"
+//   | "data"
+//   | "message"
+//   | "error"
+//   | "endTime"
+//   | "body"
+//   | "query"
+//   | "param";
+
 export function Requester<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch>(
   ctx: CoreContext<B>
 ): Promise<A>;
@@ -21,17 +46,13 @@ export type BasicContext<B extends BeforePatch = BeforePatch, A extends AfterPat
 
   startTime: Date;
 
-  // response解析方式
-  dataType?: "arrayBuffer" | "blob" | "formData" | "json" | "text";
-
   befores: Middleware<BasicContext<B, A>>[];
   requester: typeof Requester<B, A>;
   afters: Middleware<AfterContext<B, A>>[];
   errors: Middleware<ErrorContext<B, A>>[];
   finals: Middleware<FinalContext<B, A>>[];
-
-  [k: string]: any;
-} & B;
+} & B &
+Record<any, any>;
 
 export interface BeforePatch {}
 export interface CorePatch {
@@ -70,3 +91,7 @@ export type FinalContext<B extends BeforePatch = BeforePatch, A extends AfterPat
   CorePatch &
   Partial<A & ErrorPatch> &
   FinalPatch;
+
+export type InferRequesterB<T> = T extends typeof Requester<infer B extends Record<any, any>> ? B : never;
+
+export type isPartial<T> = Partial<T> extends T ? true : false;

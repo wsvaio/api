@@ -1,3 +1,21 @@
+import { merge, omit } from "@wsvaio/utils";
+
+export function mergeContext(context: any, ...contexts: any[]) {
+  const keys = ["befores", "afters", "errors", "finals"] as const;
+  keys.forEach(key => {
+    !Array.isArray(context[key]) && (context[key] = []);
+    contexts
+      .filter(item => !!item)
+      .forEach(item => {
+        Array.isArray(item[key]) && context[key].push(...item[key]);
+        merge(context, omit(item, [...keys]), {
+          deep: Number.POSITIVE_INFINITY,
+        });
+      });
+  });
+  return context;
+}
+
 export function getFullPath<
   T extends {
     query?: Record<any, any>;

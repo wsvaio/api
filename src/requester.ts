@@ -8,7 +8,14 @@ export function defineRequester<B extends BeforePatch = BeforePatch, A extends A
 }
 
 export const nativeFetchRequester = defineRequester(
-  async (ctx: CoreContext<{ timeout?: number; dataType?: string } & RequestInit>) => {
+  async (
+    ctx: CoreContext<
+      {
+        timeout?: number;
+        dataType?: "arrayBuffer" | "blob" | "formData" | "json" | "text";
+      } & RequestInit
+    >
+  ) => {
     if (ctx.timeout) {
       const controller = new AbortController();
       ctx.signal = controller.signal;
@@ -62,5 +69,7 @@ export const nativeFetchRequester = defineRequester(
   }
 );
 
+// 待实现
 export function nuxtFetchRequester() {}
+// 待实现
 export function uniappRequester() {}

@@ -5,13 +5,19 @@ import { getFullPath } from "./utils";
 export const BEFORES: Middleware<BeforeContext>[] = [
   // 拼接请求路径 fullPath
   async (ctx, next) => {
+    ctx.startTime = new Date();
     await next();
     ctx.fullPath = getFullPath(ctx);
     ctx.url = ctx.origin + ctx.fullPath;
   },
 ];
 
-export const AFTERS: Middleware<AfterContext>[] = [];
+export const AFTERS: Middleware<AfterContext>[] = [
+  async ctx => {
+    if (ctx.status < 200 || ctx.status > 299)
+      throw new Error(ctx.message);
+  },
+];
 
 export const ERRORS: Middleware<ErrorContext>[] = [
   async (ctx, next) => {
@@ -28,28 +34,29 @@ export const FINALS: Middleware<FinalContext>[] = [
     await next();
     if (!ctx.log)
       return;
-    const status = `${ctx.message}`;
     const Params = Object.setPrototypeOf({}, new function params() {}());
     const Result = Object.setPrototypeOf({}, new function result() {}());
     const Context = Object.setPrototypeOf({}, new function context() {}());
     merge(Params, is("Object")(ctx.body) ? ctx.body : { body: ctx.body });
     merge(Result, is("Object")(ctx.data) ? ctx.data : { data: ctx.data });
     merge(Context, ctx);
-    console.groupCollapsed(
-      `%c ${ctx.startTime.toLocaleTimeString()} %c ${ctx.method} %c ${ctx.fullPath} %c ${ctx.status} %c ${status} `,
-      "font-size: 16px; font-weight: 100; color: white; background: #909399; border-radius: 3px 0 0 3px;",
-      "font-size: 16px; font-weight: 100; color: white; background: #E6A23C;",
-      "font-size: 16px; font-weight: 100; color: white; background: #409EFF;",
+    const { groupCollapsed = console.log, groupEnd = console.log, log } = console;
+    groupCollapsed(
+      `%c ${ctx.startTime.toLocaleTimeString()} %c ${ctx.method} %c ${ctx.fullPath} %c ${ctx.status} %c ${
+        ctx.message
+      } %c ${ctx.duration}ms `,
+      "font-size: 16px; font-weight: 100; color: white; background: #747D8C; border-radius: 3px 0 0 3px;",
+      "font-size: 16px; font-weight: 100; color: white; background: #FFA502",
+      "font-size: 16px; font-weight: 100; color: white; background: #1E90FF",
       `font-size: 16px; font-weight: 100; color: white; background: ${
-        ctx.status && ctx.status >= 200 && ctx.status <= 299 ? "#67C23A" : "#F56C6C"
-      }`,
-      `font-size: 16px; font-weight: 100; color: white; background: ${
-        !ctx.error ? "#67C23A" : "#F56C6C"
-      }; border-radius: 0 3px 3px 0;`
+        ctx.status && ctx.status >= 200 && ctx.status < 299 ? "#2ED573" : "#FF4757"
+      };`,
+      `font-size: 16px; font-weight: 100; color: white; background: ${!ctx.error ? "#2ED573" : "#FF4757"};`,
+      "font-size: 16px; font-weight: 100; color: white; background: #747D8C; border-radius: 0 3px 3px 0;"
     );
-    console.log(Params);
-    console.log(Result);
-    console.log(Context);
-    console.groupEnd();
+    log(Params);
+    log(Result);
+    log(Context);
+    groupEnd();
   },
 ];

@@ -1,56 +1,19 @@
-// 创建api对象 泛型添加自定义属性
-// export const { get, use, extendAPI, post, request } = createAPI<{
-// 	success?: string;
-// 	headers: Record<string, string>;
-// }>({
-// 	baseURL: "/api",
-// 	log: true, // 控制台是否打印日志
-// 	timeout: 0,
-// 	headers: {},
-// });
+import { createNativeFetchAPI } from "@wsvaio/api";
 
-import { createAPI, nativeFetchRequester } from "@wsvaio/api";
-
-// use("before")(async ctx => {
-// 	console.log("before");
-// });
-
-// use("after")(async ctx => {
-// 	console.log("after");
-// 	console.log(ctx.data);
-// });
-
-// use("error")(async () => {
-// 	console.log("error");
-// });
-// use("final")(async () => {
-// 	console.log("final");
-// });
-
-// get<{ b?: { a?: number }; q?: { a?: number } }>({
-// 	afters: [async ctx => {}],
-// })().then(data => {
-// 	console.log(data);
-// });
-
-export const api = createAPI({
-  requester: nativeFetchRequester,
-  timeout: 0,
-  dataType: "json",
-  a: 6,
+export const { get, use } = createNativeFetchAPI({
+  origin: "http://localhost:5173/",
+  log: true,
+  cus: 123,
 });
 
-api.request({ method: "connect" });
-// api{}.
-api.post({ method: "connect", config: true, })({ });
+export const getTest1 = get({ path: "/test1", config: true, method: "post" });
+export const getTest2 = get<{ query: { q1: number } }>("/test1/:id?")({
+  config: true,
+  query: { q1: 1, q2: "q2" },
+  param: { id: 123 },
+  returnType: "context"
+});
 
-// const ctx = createContext({
-//   requester: nativeFetchRequester,
-//   // a: 1,
-//   // ''
-//   a: 1,
-// });
-
-// ctx.requester().then(data => data.)
-// ctx.aA extends AfterC
-// ctx.requester().then(data => data);
+use("before")(async ctx => {
+  console.log(ctx, "before");
+});

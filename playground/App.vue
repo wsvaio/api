@@ -1,37 +1,10 @@
 <script setup lang="ts">
-import { createContext, currying, exec, nativeFetchRequester } from "@wsvaio/api";
+import { getTest1, getTest2 } from "./api";
 
-// import { api } from "./api";
-// \
-const ctx = createContext({
-  requester: nativeFetchRequester,
-  // a: 1,
-  // ''
-  a: 1,
-  log: true,
-});
-
-createContext(ctx);
 async function handleClick() {
-  // get<{ q: { a: number }; d: string }>({ b: { a: 1, b: 2 } })({ q: { a: 1 } }).then(data => {
-  // 	console.log(data);
-  // });
-
-  console.log("sdf");
-  // api.request({
-  //   path: "/test",
-
-  //   log: true,
-  // }).then(data => {
-  //   // data.data
-  // });
-
-  const res = await exec(ctx);
-
-  //
-  console.log("sdf");
-
-  const a = currying(ctx)("123")({ config: true })();
+  getTest1();
+  getTest2();
+  console.log("wdf");
 }
 </script>
 
