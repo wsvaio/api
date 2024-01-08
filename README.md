@@ -48,7 +48,7 @@ export const { post, get, put, patch, del, request, use } = createByNativeFetch<
 	success?: string; // 请求成功时的消息
 	noticeable?: boolean; // 是否需要通知
 }>({
-	origin: "https://api.example.com",
+	base: "https://api.example.com",
 
 	log: true,
 	noticeable: true,
@@ -111,7 +111,7 @@ export const editUser = put({
   url: "/user/:id",
   param: { id: 1 }, // param参数
   body: { username: "oiavsw" },
-  config: true, // config=false 将会执行
+  config: true, // 必须设置config=true，否则将会执行请求
 });
 ```
 
@@ -176,7 +176,7 @@ editUser();
 import { create, uniappRequester } from "@wsvaio/api";
 
 export const { get } = create(uniappRequester)({
-  origin: "http://localhost",
+  base: "http://localhost",
   log: true,
 });
 
@@ -259,8 +259,8 @@ get、post 等http方法是柯里化的，可以无限递归，专门用于封�
 
 ```typescript
 // 创建配置
-import { createAPI } from "@wsvaio/api";
-export const { get, request } = createAPI();
+import { createByNativeFetch } from "@wsvaio/api";
+export const { get, request } = createByNativeFetch();
 // 柯里化配置
 const getTest1 = get({ url: "/test", config: true });
 const getTest2 = get({ query: { q1: 1 }, config: true })({ param: { p1: 1 }, config: true })({
@@ -300,6 +300,39 @@ const getUser = get<{
 getUser<{
   body: {};
 }>({});
+```
+
+## 扩展、继承 API 实例
+
+将要继承的ctx作为参数传入，即可扩展一个新的 API 实例：
+
+```typescript
+// 创建配置
+import { createNativeFetchAPI, mergeContext } from "@wsvaio/api";
+export const { ctx } = createNativeFetchAPI({
+  baseURL: "/api",
+});
+
+// 继承父级的配置
+const { get } = createNativeFetchAPI({
+  ...ctx,
+  // 甚至多个父级
+  ...mergeContext(ctx1, ctx2, ctx3...),
+  other: {},
+});
+
+// 发送请求
+get({ url: "/test" });
+```
+
+## 日志打印
+
+```typescript
+// 创建配置
+import { createByNativeFetch } from "@wsvaio/api";
+export const { get } = createByNativeFetch({
+  log: true, // 日志打印
+});
 ```
 
 ## 额外扩展示例
@@ -346,7 +379,7 @@ getUserInfo({ p: { id: 1 } });
 自定义错误消息，成功消息，可以自定义是否通知
 
 ```ts
-export const { get, use } = createAPI<{
+export const { get, use } = createByNativeFetch<{
   sucMsg?: boolean | string; // 操作成功时的消息，传入布尔值代表请求成功是否通知ctx.message，传入字符串代表请求成功后通知该内容
   errMsg?: boolean | string; // 操作失败时的消息，传入布尔值代表请求报错是否通知ctx.message，传入字符串代表请求报错后通知该内容
 }>({
@@ -385,46 +418,66 @@ const getUserInfo = get<{ param: { id: number } }>("/user/:id");
 getUserInfo({
   param: { id: 1 },
   sucMsg: "获取成功",
-  errMsg: "获取失败"
+  errMsg: "获取失败",
 });
 // 请求成功或失败都不会有通知
 getUserInfo({
   param: { id: 1 },
   sucMsg: false,
-  errMsg: false
+  errMsg: false,
 });
 ```
 
-## 扩展、继承 API 实例
+## 2.0更新了什么？
 
-将要继承的ctx作为参数传入，即可扩展一个新的 API 实例：
+- **通过不同的requester，支持不同的运行环境**，例如原生web使用nativeFetachRequester、uniapp使用uniappRequester
+- 自定义requester、通过defineRequester可以自定义请求器，您甚至可以将ajax(xhr)作为请求器使用！并且有完善的类型支持！
+- 代码、类型近乎完全的重构，代码结构更加合理，类型支持更加完善
+- log样式更新，新增请求耗时的展示
+- baseURL 和 url 更改为 base 和 path，同时添加了fullPath，url更改
+  - base：原baseURL，请求基本路径或链接
+  - path：原url，请求路径
+  - fullPath：query与param拼接后的路径
+  - url：请求的完整链接地址（base + fullPath）
+- 对相关api命名更改
+  - createAPI -> createByNativeFetch
+  - run -> exec
+  - ……
+- **无限柯里化配置回归！**，带有完善的类型支持，通过`{returnType: 'context'}`配置可将ctx作为返回值返回（默认返回ctx.data）
+- 移除b、q、p配置（body、query、param）的别名，但可以自己通过before中间件实现
+- ……
 
-```typescript
-// 创建配置
-import { createNativeFetchAPI } from "@wsvaio/api";
-export const { ctx } = createNativeFetchAPI({
-  baseURL: "/api",
-});
+## 迁移至2.0
 
-// 继承父级的配置
-const { get } = createNativeFetchAPI({
-  ...ctx,
-  other: {},
-});
+2.0 带来了些许破坏式更新，但他们大多是一些命名的更新，迁移难度不高
 
-// 发送请求
-get({ url: "/test" });
-```
+- createAPI 更改为 createByNativeFetch，若要从@wsvaio/uniapp迁移，只需要`const createAPI = create(unqippRequester)`即可
+- b、q、p支持移除，可添加前置中间件实现 [为query、body、param添加别名支持q、b、p](#为query、body、param添加别名支持q、b、p)
+- baseURL 和 url 更改为 base 和 path，可通过全局替换迁移，或添加前置中间件
 
-## 日志打印
+  ```ts
+  use("before")(async ctx => {
+    ctx.base = ctx.baseURL;
+    ctx.path = ctx.url;
 
-```typescript
-// 创建配置
-import { createAPI } from "@wsvaio/api";
-export const { get } = createAPI({
-  log: true, // 日志打印
-});
-```
+    // 若有报错可忽略
+    delete ctx.baseURL;
+    delete ctx.url;
+  });
+  ```
+
+- 无限柯里化的回归，请在非调用配置中添加 `{ config: true }`
+
+- 柯里化泛型，D -> data，请用data声明类型 `get<{ D: string }>(/test) -> get<{ data: string }>(/test)`
+
+- ……
+
+## 后续
+
+- 考虑更改架构（monorepo），主要是将不同平台的requester抽离出去
+- 考虑更改包名称（实在想不出好名字），欢迎提issue
+- 有生之年更新完善的文档（vitepress）
+- 持续的更新优化代码
 
 ## 源码
 
@@ -434,4 +487,4 @@ export const { get } = createAPI({
 
 如果您发现@wsvaio/api 中有任何问题或缺少某些功能，请随时提交问题或请求。
 
-我们欢迎您的贡献，包括提交错误修复、添加新功能或改进文档。
+欢迎您的贡献，包括提交错误修复、添加新功能或改进文档。
