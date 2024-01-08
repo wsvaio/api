@@ -1,7 +1,7 @@
 import type { AfterPatch, BasicContext, BeforeContext, BeforePatch, Requester } from "./types";
 import { mergeContext } from "./utils";
 
-export const context = {
+export const CONTEXT = {
   method: "get",
   headers: {},
   log: false,
@@ -22,9 +22,9 @@ export const context = {
 export function createContext<T extends Record<any, any>, B extends BeforePatch, A extends AfterPatch>(
   initial: Partial<Omit<BasicContext<B, A>, "requester">> & { requester: typeof Requester<B, A> } & T
 ) {
-  return mergeContext({}, context, initial) as BeforeContext<B & T, A>;
+  return mergeContext({}, CONTEXT, initial) as BeforeContext<B & T, A>;
 }
 
 export function setGlobalContext(ctx: Partial<Omit<BasicContext, "requester">>) {
-  mergeContext(context, ctx);
+  mergeContext(CONTEXT, ctx);
 }

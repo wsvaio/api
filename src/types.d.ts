@@ -93,5 +93,3 @@ export type FinalContext<B extends BeforePatch = BeforePatch, A extends AfterPat
   FinalPatch;
 
 export type InferRequesterB<T> = T extends typeof Requester<infer B extends Record<any, any>> ? B : never;
-
-export type isPartial<T> = Partial<T> extends T ? true : false;

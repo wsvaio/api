@@ -32,7 +32,7 @@ import { createContext } from "./context";
 //   };
 // }
 
-export function createAPI<B extends BeforePatch, A extends AfterPatch>(requester: typeof Requester<B, A>) {
+export function create<B extends BeforePatch, A extends AfterPatch>(requester: typeof Requester<B, A>) {
   return <T extends Record<any, any>>(initial: Partial<BeforeContext<B, A>> & T) => {
     const ctx = createContext<T, B, A>({ ...initial, requester });
     const request = currying(ctx);
@@ -44,7 +44,6 @@ export function createAPI<B extends BeforePatch, A extends AfterPatch>(requester
         (...args: BeforeContext<B & T, A>[`${K}s`]) => {
           // @ts-expect-error pass
           ctx[`${key}s`].push(...args);
-          console.log(ctx, key);
         },
 
       request,
@@ -61,4 +60,8 @@ export function createAPI<B extends BeforePatch, A extends AfterPatch>(requester
   };
 }
 
-export const createNativeFetchAPI = createAPI(nativeFetchRequester);
+export const createByNativeFetch = create(nativeFetchRequester);
+
+// export const createUniappAPI = createAPI(uniappRequester);
+
+// export const createNuxtFetchAPI = createAPI(nuxtFetchRequester);

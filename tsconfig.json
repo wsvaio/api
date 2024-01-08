@@ -16,7 +16,9 @@
 		"paths": {
 			"@wsvaio/api": ["src/index.ts"],
 			"@/*": ["playground/*"]
-		}
+		},
+
+    "types": ["@dcloudio/types"]
 	},
 	"exclude": ["node_modules"]
 }

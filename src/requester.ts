@@ -1,4 +1,7 @@
 import { is, pick, trying } from "@wsvaio/utils";
+
+import type { NitroFetchOptions } from "nitropack";
+import type { FetchContext, FetchResponse } from "ofetch";
 import type { AfterPatch, BeforePatch, CoreContext, Requester } from "./types";
 
 export function defineRequester<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch>(
@@ -13,7 +16,7 @@ export const nativeFetchRequester = defineRequester(
       {
         timeout?: number;
         dataType?: "arrayBuffer" | "blob" | "formData" | "json" | "text";
-      } & RequestInit
+      } & Omit<RequestInit, "body" | "headers" | "method">
     >
   ) => {
     if (ctx.timeout) {
@@ -69,7 +72,108 @@ export const nativeFetchRequester = defineRequester(
   }
 );
 
-// 待实现
-export function nuxtFetchRequester() {}
-// 待实现
-export function uniappRequester() {}
+// nuxt $fetch
+export const nuxtFetchRequester = defineRequester(
+  async (
+    ctx: CoreContext<
+      Omit<
+        NitroFetchOptions<
+          string,
+          "get" | "head" | "patch" | "post" | "put" | "delete" | "connect" | "options" | "trace"
+        >,
+        | "baseURL"
+        | "body"
+        | "query"
+        | "params"
+        | "onRequest"
+        | "onRequestError"
+        | "onResponse"
+        | "onResponseError"
+        | "method"
+      >
+    >
+  ) => {
+    const context = await new Promise<FetchContext & { response: FetchResponse<ResponseType> }>(resolve => {
+      $fetch(ctx.url, {
+        onResponse(context) {
+          resolve(context);
+        },
+        ...pick(ctx, [
+          "body",
+          "cache",
+          "credentials",
+          "duplex",
+          "headers",
+          "ignoreResponseError",
+          "integrity",
+          "keepalive",
+          "method",
+          "mode",
+          "parseResponse",
+          "redirect",
+          "referrer",
+          "referrerPolicy",
+          "responseType",
+          "retry",
+          "retryDelay",
+          "retryStatusCodes",
+          "signal",
+          "timeout",
+          "window",
+        ]),
+      });
+    });
+    if (context.error)
+      throw context.error;
+    return {
+      response: context.response,
+      ok: context.response.ok,
+      message: context.response.statusText,
+      status: context.response.status,
+      data: context.response._data,
+    };
+  }
+);
+// Uniapp uni.request
+export const uniappRequester = defineRequester(
+  async (
+    ctx: CoreContext<
+      { body: string | ArrayBuffer | AnyObject | undefined } & Omit<
+        UniApp.RequestOptions,
+        "success" | "fail" | "complete" | "data" | "method" | "url"
+      >
+    >
+  ) => {
+    const response = await uni.request({
+      ...pick(ctx, [
+        "header",
+        "timeout",
+        "dataType",
+        "responseType",
+        "sslVerify",
+        "withCredentials",
+        "firstIpv4",
+        "enableHttp2",
+        "enableQuic",
+        "enableCache",
+        "enableHttpDNS",
+        "httpDNSServiceId",
+        "enableChunked",
+        "forceCellularNetwork",
+        "enableCookie",
+        "cloudCache",
+        "defer",
+      ]),
+      method: ctx.method.toUpperCase() as UniApp.RequestOptions["method"],
+      url: ctx.url,
+      data: ctx.body,
+    });
+
+    return {
+      data: response.data,
+      status: response.statusCode,
+      message: response.errMsg || "OK",
+      response,
+    };
+  }
+);

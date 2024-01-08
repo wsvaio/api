@@ -37,14 +37,14 @@ npm install @wsvaio/api
 首先，需要引入请求库：
 
 ```
-import { createNativeFetchAPI } from "@wsvaio/api";
+import { createNativeFetch } from "@wsvaio/api";
 ```
 
 接下来，可以创建一个 API 实例：
 
 ```javascript
 // 创建api实例并带有两个自定义属性
-export const { post, get, put, patch, del, request, use } = createNativeFetchAPI<{
+export const { post, get, put, patch, del, request, use } = createByNativeFetch<{
 	success?: string; // 请求成功时的消息
 	noticeable?: boolean; // 是否需要通知
 }>({
@@ -167,23 +167,55 @@ editUser();
 内置：
 
 - nativeFetchRequester //原生fetch
-- uniappRequester // uniapp环境下的request，暂未实现
-- nuxtFetchRequester // nuxt环境下的$fetch，暂未实现
+- uniappRequester // uniapp环境下的request
+- nuxtFetchRequester // nuxt环境下的$fetch
 
 例如要兼容uniapp，则可以使用uniappRequester
 
 ```ts
-import { createAPI, uniappRequester } from "@wsvaio/api";
+import { create, uniappRequester } from "@wsvaio/api";
 
-export const { get } = createAPI(uniappRequester)({
+export const { get } = create(uniappRequester)({
   origin: "http://localhost",
-  log: true
+  log: true,
 });
 
 get({
-  q: { q1: 1 }
+  q: { q1: 1 },
 });
 ```
+
+createByNtiveFetch({...}) 相当于 create(nativeFetchRequester)({...})
+
+## 自定义requester
+
+通过 defineRequester 可以自定义请求器，例如一个简易的fetch请求器：
+
+```ts
+import { defineRequester } from "@wsvaio/api";
+
+export const myNativeFetchRequester = defineRequester(
+  async (
+    ctx: CoreContext<{
+      // ……自定义类型
+    }>
+  ) => {
+    const response = await fetch(ctx.url);
+
+    return {
+      // 必须返回这三个属性
+      data: await response.json(),
+      message: response.statusText,
+      status: response.status,
+
+      // 可以额外返回一些自定义属性
+      test: "my requester",
+    };
+  }
+);
+```
+
+**通用性的核心就是通过定义不同环境下的requester来实现的**
 
 ## 中间件
 
@@ -237,18 +269,23 @@ const getTest2 = get({ query: { q1: 1 }, config: true })({ param: { p1: 1 }, con
 });
 const getTest3 = get("/test"); // 相当于 { path: '/test', config: true }
 // 发送请求
-getTest1({ q: { p1: 1 } }).then(data => console.log(data));
-getTest2({ q: { p2: 2 } }).then(data => console.log(data));
+getTest1({ query: { p1: 1 } }).then(data => console.log(data));
+getTest2({ query: { p2: 2 } }).then(data => console.log(data));
 getTest3().then(data => console.log(data));
 ```
 
-设置 { returnType: "context" } 将会返回context，默认返回context.data
-``` ts
+**设置 { returnType: "context" } 将会返回context，默认返回context.data**
+
+```ts
 getTest1({ returnType: "context" }); // ctx
 getTest1({ returnType: "data" }); // ctx.data
 ```
 
 ## Typescirpt
+
+类型支持！不同的requester也会有不同的类型
+
+柯里化的泛型支持
 
 ```typescript
 // 泛型支持，可无限递归配置，对当前无影响，对递归的下一级有影响，后续则都为可选
@@ -262,7 +299,100 @@ const getUser = get<{
 // 支持递归
 getUser<{
   body: {};
-}>({  });
+}>({});
+```
+
+## 额外扩展示例
+
+通过自定义类型+中间件+柯里化配置等，可以灵活的控制请求过程，甚至添加一些额外的实用功能
+
+只有想不到，没有做不到
+
+**整体思路**
+
+通过自定义类型，要求调用者可以传入一些自定义属性
+
+在中间件下对实现相关功能，与自定义属性实现联动
+
+### 为query、body、param添加别名支持q、b、p
+
+只需要在before中间件将q、b、p与query、body、param赋值便可
+
+```ts
+import { createByNativeFetch } from "@wsvaio/api";
+
+export const { post, get, put, patch, del, request, use, ctx } = createByNativeFetch<{
+  b?: Record<any, any>;
+  q?: Record<any, any>;
+  p?: Record<any, any>;
+}>({
+  // ...
+});
+
+use("before")(async ctx => {
+  ctx.q && Object.assign(ctx.query, ctx.q);
+  ctx.b && ctx.body instanceof Object && Object.assign(ctx.body, ctx.b);
+  ctx.p && Object.assign(ctx.param, ctx.p);
+});
+// 封装接口，传入泛型，只需要定义p的类型便可
+export const getUserInfo = get<{ p: { id: number } }>("/user/:id");
+
+// 使用时会有类型校验，必须传入p.id，否则报错
+getUserInfo({ p: { id: 1 } });
+```
+
+### 全局的错误消息通知或成功消息通知
+
+自定义错误消息，成功消息，可以自定义是否通知
+
+```ts
+export const { get, use } = createAPI<{
+  sucMsg?: boolean | string; // 操作成功时的消息，传入布尔值代表请求成功是否通知ctx.message，传入字符串代表请求成功后通知该内容
+  errMsg?: boolean | string; // 操作失败时的消息，传入布尔值代表请求报错是否通知ctx.message，传入字符串代表请求报错后通知该内容
+}>({
+  // ...
+
+  errMsg: true, // 默认进行错误通知
+});
+
+// 统一message
+use("final")(async ctx => {
+  // 可以为业务msg，或是http状态，等等由实际业务决定
+  ctx.message = ctx.data.msg || ctx.response.statusText || ctx.message;
+});
+// 成功提示，优先级为ctx.sucMsg > ctx.message
+use("final")(async ctx => {
+  if (!ctx.sucMsg || ctx.error)
+    return;
+  const message = ctx.sucMsg === true || typeof ctx.sucMsg !== "string" ? ctx.message : ctx.sucMsg;
+  // 这里用element组件的api进行通知
+  ElMessage.success(message);
+});
+// 错误提示，优先级为ctx.errMsg > ctx.message
+use("final")(async ctx => {
+  if (!ctx.errMsg || !ctx.error)
+    return;
+  const message = ctx.errMsg === true || typeof ctx.errMsg !== "string" ? ctx.message : ctx.errMsg;
+  // 这里用element组件的api进行通知
+  ElMessage.error(message);
+});
+
+// 定义接口
+const getUserInfo = get<{ param: { id: number } }>("/user/:id");
+
+// 使用
+// 请求成功后会通知“获取成功”，请求失败后会通知“获取失败”
+getUserInfo({
+  param: { id: 1 },
+  sucMsg: "获取成功",
+  errMsg: "获取失败"
+});
+// 请求成功或失败都不会有通知
+getUserInfo({
+  param: { id: 1 },
+  sucMsg: false,
+  errMsg: false
+});
 ```
 
 ## 扩展、继承 API 实例
@@ -279,7 +409,7 @@ export const { ctx } = createNativeFetchAPI({
 // 继承父级的配置
 const { get } = createNativeFetchAPI({
   ...ctx,
-  other: {}
+  other: {},
 });
 
 // 发送请求

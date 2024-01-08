@@ -1,6 +1,6 @@
-import { createNativeFetchAPI } from "@wsvaio/api";
+import { create, createByNativeFetch, nuxtFetchRequester, uniappRequester, } from "@wsvaio/api";
 
-export const { get, use } = createNativeFetchAPI({
+export const { get, use } = createByNativeFetch({
   origin: "http://localhost:5173/",
   log: true,
   cus: 123,
@@ -17,3 +17,17 @@ export const getTest2 = get<{ query: { q1: number } }>("/test1/:id?")({
 use("before")(async ctx => {
   console.log(ctx, "before");
 });
+
+export const uniapp = create(uniappRequester)({
+
+});
+
+export const nuxt = create(nuxtFetchRequester)({
+
+});
+
+getTest1({ body: {} });
+// uniapp.get("/fu")({ returnType: "data" }).then(data => {
+//   // data
+
+// });
