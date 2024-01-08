@@ -7,7 +7,7 @@ export const CONTEXT = {
   log: false,
 
   path: "/",
-  origin: "",
+  base: "",
 
   query: {},
   body: null,

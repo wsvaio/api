@@ -1,7 +1,7 @@
 import { create, createByNativeFetch, nuxtFetchRequester, uniappRequester, } from "@wsvaio/api";
 
 export const { get, use } = createByNativeFetch({
-  origin: "http://localhost:5173/",
+  base: "http://localhost:5173/",
   log: true,
   cus: 123,
 });

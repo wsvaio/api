@@ -2,31 +2,6 @@ import type { Middleware } from "@wsvaio/utils";
 
 export type { Middleware };
 
-// 保留字段
-// export type ReservedField =
-//   | "method"
-//   | "headers"
-//   | "origin"
-//   | "path"
-//   | "log"
-//   | "startTime"
-//   | "befores"
-//   | "requester"
-//   | "afters"
-//   | "errors"
-//   | "finals"
-//   | "fullPath"
-//   | "url"
-//   | "duration"
-//   | "status"
-//   | "data"
-//   | "message"
-//   | "error"
-//   | "endTime"
-//   | "body"
-//   | "query"
-//   | "param";
-
 export function Requester<B extends BeforePatch = BeforePatch, A extends AfterPatch = AfterPatch>(
   ctx: CoreContext<B>
 ): Promise<A>;
@@ -35,7 +10,7 @@ export type BasicContext<B extends BeforePatch = BeforePatch, A extends AfterPat
   method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "connect" | "trace";
   headers: Record<any, any>;
 
-  origin: string;
+  base: string;
   path: string;
 
   body: Record<any, any> | BodyInit | null;

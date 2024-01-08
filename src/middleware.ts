@@ -7,8 +7,10 @@ export const BEFORES: Middleware<BeforeContext>[] = [
   async (ctx, next) => {
     ctx.startTime = new Date();
     await next();
+    if (ctx.url)
+      return;
     ctx.fullPath = getFullPath(ctx);
-    ctx.url = ctx.origin + ctx.fullPath;
+    ctx.url = ctx.base + ctx.fullPath;
   },
 ];
 
