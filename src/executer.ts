@@ -6,8 +6,9 @@ import { AFTERS, BEFORES, ERRORS, FINALS } from "./middleware";
 // 基本执行器
 export function exec<B extends Record<any, any>, A extends AfterPatch>(
   ctx: BasicContext<B, A>
-): FinalContext<B, A> & Promise<FinalContext<B, A>> {
-  return mergeContext(
+): Promise<FinalContext<B, A>> {
+  // @ts-expect-error pass
+  return (
     compose(
       ...BEFORES,
       // @ts-expect-error pass
@@ -29,7 +30,6 @@ export function exec<B extends Record<any, any>, A extends AfterPatch>(
         return compose(...ERRORS, ...ctx.errors)(ctx);
       })
       // @ts-expect-error pass
-      .finally(() => compose(...FINALS, ...ctx.finals)(ctx)),
-    ctx
+      .finally(() => compose(...FINALS, ...ctx.finals)(ctx))
   );
 }

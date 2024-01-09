@@ -139,6 +139,8 @@ export function currying<
     if (config.config === true)
       return currying(context, ...contexts, omit(config, ["config"]));
 
-    return exec(mergeContext({}, context, ...contexts, omit(config, ["config"]))).then(data => data.data);
+    const ctx = mergeContext({}, context, ...contexts, omit(config, ["config"]));
+    const result = exec(ctx).then(data => data.data);
+    return mergeContext(result, ctx);
   };
 }

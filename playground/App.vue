@@ -3,8 +3,8 @@ import { getTest1, getTest2 } from "./api";
 
 async function handleClick() {
   getTest1();
-  getTest2();
-  console.log("wdf");
+  const r = getTest2();
+  console.log("wdf", r);
 }
 </script>
 
