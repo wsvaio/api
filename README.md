@@ -272,13 +272,12 @@ const getTest3 = get("/test"); // 相当于 { path: '/test', config: true }
 getTest1({ query: { p1: 1 } }).then(data => console.log(data));
 getTest2({ query: { p2: 2 } }).then(data => console.log(data));
 getTest3().then(data => console.log(data));
-```
 
-**设置 { returnType: "context" } 将会返回context，默认返回context.data**
-
-```ts
-getTest1({ returnType: "context" }); // ctx
-getTest1({ returnType: "data" }); // ctx.data
+// 获取context
+const context = getTest3();
+console.log(context)
+// 获取data
+const data = await context;
 ```
 
 ## Typescirpt
@@ -347,7 +346,7 @@ export const { get } = createByNativeFetch({
 
 在中间件下对实现相关功能，与自定义属性实现联动
 
-### 为query、body、param添加别名支持q、b、p
+<h3 id="为querybodyparam添加别名支">为query、body、param添加别名支持q、b、p</h3>
 
 只需要在before中间件将q、b、p与query、body、param赋值便可
 
@@ -364,7 +363,7 @@ export const { post, get, put, patch, del, request, use, ctx } = createByNativeF
 
 use("before")(async ctx => {
   ctx.q && Object.assign(ctx.query, ctx.q);
-  ctx.b && ctx.body instanceof Object && Object.assign(ctx.body, ctx.b);
+  ctx.b && !ctx.body && (ctx.body = ctx.b);
   ctx.p && Object.assign(ctx.param, ctx.p);
 });
 // 封装接口，传入泛型，只需要定义p的类型便可
@@ -443,7 +442,7 @@ getUserInfo({
   - createAPI -> createByNativeFetch
   - run -> exec
   - ……
-- **无限柯里化配置回归！**，带有完善的类型支持，通过`{returnType: 'context'}`配置可将ctx作为返回值返回（默认返回ctx.data）
+- **无限柯里化配置回归！**，带有完善的类型支持
 - 移除b、q、p配置（body、query、param）的别名，但可以自己通过before中间件实现
 - ……
 
@@ -452,7 +451,7 @@ getUserInfo({
 2.0 带来了些许破坏式更新，但他们大多是一些命名的更新，迁移难度不高
 
 - createAPI 更改为 createByNativeFetch，若要从@wsvaio/uniapp迁移，只需要`const createAPI = create(unqippRequester)`即可
-- b、q、p支持移除，可添加前置中间件实现 [为query、body、param添加别名支持q、b、p](#为query、body、param添加别名支持q、b、p)
+- b、q、p支持移除，可添加前置中间件实现 [为query、body、param添加别名支持q、b、p](#为querybodyparam添加别名支)
 - baseURL 和 url 更改为 base 和 path，可通过全局替换迁移，或添加前置中间件
 
   ```ts

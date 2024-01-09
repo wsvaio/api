@@ -16,10 +16,18 @@ export function exec<B extends Record<any, any>, A extends AfterPatch>(
     )(ctx)
       // @ts-expect-error pass
       .then(async () => mergeContext(ctx, await ctx.requester(ctx)))
-      // @ts-expect-error pass
-      .then(() => compose(...AFTERS, ...ctx.afters)(ctx))
-      // @ts-expect-error pass
-      .catch(error => compose(...ERRORS, ...ctx.errors)(mergeContext(ctx, { error })))
+
+      .then(() => {
+        delete ctx.error;
+        // @ts-expect-error pass
+        return compose(...AFTERS, ...ctx.afters)(ctx);
+      })
+      .catch(error => {
+        // @ts-expect-error pass
+        ctx.error = error;
+        // @ts-expect-error pass
+        return compose(...ERRORS, ...ctx.errors)(ctx);
+      })
       // @ts-expect-error pass
       .finally(() => compose(...FINALS, ...ctx.finals)(ctx)),
     ctx

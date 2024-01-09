@@ -25,7 +25,7 @@ export const nativeFetchRequester = defineRequester(
       setTimeout(() => controller.abort(), ctx.timeout);
     }
 
-    let body: any = ctx.body;
+    let body: any = ["get", "head"].includes(ctx.method.toLowerCase()) ? null : ctx.body;
     if (!["get", "head"].includes(ctx.method.toLowerCase()) && is("Object", "Array")(ctx.body)) {
       await trying(() => {
         body = JSON.stringify(ctx.body);

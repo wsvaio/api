@@ -5,12 +5,13 @@ import { getFullPath } from "./utils";
 export const BEFORES: Middleware<BeforeContext>[] = [
   // 拼接请求路径 fullPath
   async (ctx, next) => {
-    ctx.startTime = new Date();
+    if (ctx.log)
+      ctx.startTime = new Date();
     await next();
-    if (ctx.url)
-      return;
-    ctx.fullPath = getFullPath(ctx);
-    ctx.url = ctx.base + ctx.fullPath;
+    if (!ctx.url) {
+      ctx.fullPath = getFullPath(ctx);
+      ctx.url = ctx.base + ctx.fullPath;
+    }
   },
 ];
 
@@ -36,12 +37,12 @@ export const FINALS: Middleware<FinalContext>[] = [
     await next();
     if (!ctx.log)
       return;
-    const Params = Object.setPrototypeOf({}, new function params() {}());
-    const Result = Object.setPrototypeOf({}, new function result() {}());
-    const Context = Object.setPrototypeOf({}, new function context() {}());
-    merge(Params, is("Object")(ctx.body) ? ctx.body : { body: ctx.body });
-    merge(Result, is("Object")(ctx.data) ? ctx.data : { data: ctx.data });
-    merge(Context, ctx);
+    const P = Object.setPrototypeOf({}, new function params() {}());
+    const R = Object.setPrototypeOf({}, new function result() {}());
+    const C = Object.setPrototypeOf({}, new function context() {}());
+    merge(P, is("Object")(ctx.body) ? ctx.body : { body: ctx.body });
+    merge(R, is("Object")(ctx.data) ? ctx.data : { data: ctx.data });
+    merge(C, ctx);
     const { groupCollapsed = console.log, groupEnd = console.log, log } = console;
     groupCollapsed(
       `%c ${ctx.startTime.toLocaleTimeString()} %c ${ctx.method} %c ${ctx.fullPath} %c ${ctx.status} %c ${
@@ -56,9 +57,9 @@ export const FINALS: Middleware<FinalContext>[] = [
       `font-size: 16px; font-weight: 100; color: white; background: ${!ctx.error ? "#2ED573" : "#FF4757"};`,
       "font-size: 16px; font-weight: 100; color: white; background: #747D8C; border-radius: 0 3px 3px 0;"
     );
-    log(Params);
-    log(Result);
-    log(Context);
+    log(P);
+    log(R);
+    log(C);
     groupEnd();
   },
 ];
