@@ -5,8 +5,7 @@ import { getFullPath } from "./utils";
 export const BEFORES: Middleware<BeforeContext>[] = [
   // 拼接请求路径 fullPath
   async (ctx, next) => {
-    if (ctx.log)
-      ctx.startTime = new Date();
+    ctx.startTime = new Date();
     await next();
     if (!ctx.url) {
       ctx.fullPath = getFullPath(ctx);
