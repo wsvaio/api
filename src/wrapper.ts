@@ -93,8 +93,9 @@ export interface Currying<
   <T extends {}>(
     config: Omit<C, "data"> & Partial<BeforeContext<B, A>> & { config: true }
   ): Currying<T & E, T & DeepPartial<E>, B, A>;
-  <T>(config?: Omit<C, "data"> & Partial<BeforeContext<B, A>> & { config?: false }): FinalContext<B & E, A> &
-    // @ts-expect-error pass
+  <T>(config?: Omit<C, "data"> & Partial<BeforeContext<B, A>> & { config?: false }): {
+    ctx: FinalContext<B & E, A>;
+  } & // @ts-expect-error pass
   Promise<IsEqual<T, unknown> extends true ? (IsEqual<E["data"], unknown> extends true ? A["data"] : E["data"]) : T>;
 }
 
@@ -133,6 +134,7 @@ export function currying<
 
   // return result;
 
+  // @ts-expect-error pass
   return (config: (Partial<BeforeContext<B, A>> & { config?: boolean }) | string = {}) => {
     if (typeof config === "string")
       return currying(context, ...contexts, { path: config });
@@ -141,6 +143,8 @@ export function currying<
 
     const ctx = mergeContext({}, context, ...contexts, omit(config, ["config"]));
     const result = exec(ctx).then(data => data.data);
-    return mergeContext(result, ctx);
+    // @ts-expect-error pass
+    result.ctx = ctx;
+    return result;
   };
 }
