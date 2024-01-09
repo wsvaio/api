@@ -25,7 +25,7 @@ export const nativeFetchRequester = defineRequester(
       setTimeout(() => controller.abort(), ctx.timeout);
     }
 
-    let body: any;
+    let body: any = ctx.body;
     if (!["get", "head"].includes(ctx.method.toLowerCase()) && is("Object", "Array")(ctx.body)) {
       await trying(() => {
         body = JSON.stringify(ctx.body);
@@ -81,23 +81,12 @@ export const nuxtFetchRequester = defineRequester(
           string,
           "get" | "head" | "patch" | "post" | "put" | "delete" | "connect" | "options" | "trace"
         >,
-        | "baseURL"
-        | "body"
-        | "query"
-        | "params"
-        | "onRequest"
-        | "onRequestError"
-        | "onResponse"
-        | "onResponseError"
-        | "method"
+        "baseURL" | "body" | "query" | "params" | "method"
       >
     >
   ) => {
     const context = await new Promise<FetchContext & { response: FetchResponse<ResponseType> }>(resolve => {
       $fetch(ctx.url, {
-        onResponse(context) {
-          resolve(context);
-        },
         ...pick(ctx, [
           "body",
           "cache",
@@ -120,7 +109,15 @@ export const nuxtFetchRequester = defineRequester(
           "signal",
           "timeout",
           "window",
+          "onRequest",
+          "onRequestError",
+          // "onResponse",
+          "onReponseError",
         ]),
+        onResponse(context) {
+          ctx.onResponse && ctx.onResponse(context);
+          resolve(context);
+        },
       });
     });
     if (context.error)
@@ -138,35 +135,46 @@ export const nuxtFetchRequester = defineRequester(
 export const uniappRequester = defineRequester(
   async (
     ctx: CoreContext<
-      { body: string | ArrayBuffer | AnyObject | undefined } & Omit<
+      { body: string | ArrayBuffer | AnyObject | undefined; task?: UniApp.RequestTask } & Omit<
         UniApp.RequestOptions,
-        "success" | "fail" | "complete" | "data" | "method" | "url"
+        "data" | "method" | "url"
       >
     >
   ) => {
-    const response = await uni.request({
-      ...pick(ctx, [
-        "header",
-        "timeout",
-        "dataType",
-        "responseType",
-        "sslVerify",
-        "withCredentials",
-        "firstIpv4",
-        "enableHttp2",
-        "enableQuic",
-        "enableCache",
-        "enableHttpDNS",
-        "httpDNSServiceId",
-        "enableChunked",
-        "forceCellularNetwork",
-        "enableCookie",
-        "cloudCache",
-        "defer",
-      ]),
-      method: ctx.method.toUpperCase() as UniApp.RequestOptions["method"],
-      url: ctx.url,
-      data: ctx.body,
+    const response: UniApp.RequestSuccessCallbackResult = await new Promise((resolve, reject) => {
+      ctx.task = uni.request({
+        ...pick(ctx, [
+          "header",
+          "timeout",
+          "dataType",
+          "responseType",
+          "sslVerify",
+          "withCredentials",
+          "firstIpv4",
+          "enableHttp2",
+          "enableQuic",
+          "enableCache",
+          "enableHttpDNS",
+          "httpDNSServiceId",
+          "enableChunked",
+          "forceCellularNetwork",
+          "enableCookie",
+          "cloudCache",
+          "defer",
+        ]),
+        method: ctx.method.toUpperCase() as UniApp.RequestOptions["method"],
+        url: ctx.url,
+        data: ctx.body,
+        success(result) {
+          ctx.success && ctx.success(result);
+          resolve(result);
+        },
+        fail(result) {
+          ctx.fail && ctx.fail(result);
+          reject(result);
+        },
+        complete: ctx.complete,
+      });
     });
 
     return {
@@ -174,6 +182,7 @@ export const uniappRequester = defineRequester(
       status: response.statusCode,
       message: response.errMsg || "OK",
       response,
+      task: ctx.task!,
     };
   }
 );

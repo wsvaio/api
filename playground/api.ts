@@ -11,7 +11,8 @@ export const getTest2 = get<{ query: { q1: number } }>("/test1/:id?")({
   config: true,
   query: { q1: 1, q2: "q2" },
   param: { id: 123 },
-  returnType: "context"
+  // returnType: "context"
+
 });
 
 use("before")(async ctx => {
@@ -26,7 +27,14 @@ export const nuxt = create(nuxtFetchRequester)({
 
 });
 
-getTest1({ body: {} });
+// const a = uniapp.get({ });
+// a.task?.abort();
+// a.then(data => {
+//   data;
+// });
+
+// const a = getTest1<{ data: string }>({ body: {}, returnType: "data" });
+// a.then(data => data);
 // uniapp.get("/fu")({ returnType: "data" }).then(data => {
 //   // data
 

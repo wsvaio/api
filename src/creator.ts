@@ -36,7 +36,6 @@ export function create<B extends BeforePatch, A extends AfterPatch>(requester: t
   return <T extends Record<any, any>>(initial: Partial<BeforeContext<B, A>> & T) => {
     const ctx = createContext<T, B, A>({ ...initial, requester });
     const request = currying(ctx);
-
     return {
       ctx,
       use:
@@ -45,7 +44,6 @@ export function create<B extends BeforePatch, A extends AfterPatch>(requester: t
           // @ts-expect-error pass
           ctx[`${key}s`].push(...args);
         },
-
       request,
       get: request({ method: "get", config: true }),
       post: request({ method: "post", config: true }),
