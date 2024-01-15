@@ -89,7 +89,6 @@ export interface Currying<
   B extends BeforePatch = BeforePatch,
   A extends AfterPatch = AfterPatch,
 > {
-  <T extends {}>(config: string): Currying<T & E, T & C, B, A>;
   <T extends {}>(
     config: Omit<C, "data"> & Partial<BeforeContext<B, A>> & { config: true }
   ): Currying<T & E, T & DeepPartial<E>, B, A>;
@@ -97,6 +96,8 @@ export interface Currying<
     ctx: FinalContext<B & E, A>;
   } & // @ts-expect-error pass
   Promise<IsEqual<T, unknown> extends true ? (IsEqual<E["data"], unknown> extends true ? A["data"] : E["data"]) : T>;
+  <T extends {}>(config: string): Currying<T & E, T & C, B, A>;
+
 }
 
 /**
@@ -145,6 +146,7 @@ export function currying<
     const result = exec(ctx).then(data => data.data);
     // @ts-expect-error pass
     result.ctx = ctx;
+    // result.data = result;
     return result;
   };
 }
